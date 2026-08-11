@@ -15,3 +15,14 @@ db_config = {
 
 def get_db_connection():
     return mysql.connector.connect(**db_config)
+
+def connection():
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    return conn, cursor
+
+def close(cursor, conn):
+    if cursor:
+            cursor.close()
+    if conn:
+        conn.close()
