@@ -9,12 +9,37 @@ routes = Blueprint("routes", __name__)
 
 # criar funções uteis pra evitar ficar reescrevendo codigo
 
-#rotas de exibição
+def getResume():
+    conn, cursor = connection()
+    pais = "japao"
+
+    cursor.execute("""
+    select cust_med from paises where pais = %s
+""", (pais,))
+    custo = cursor.fetchone()[0]
+
+    cursor.execute("""
+    select pais
+        from paises
+        where pais = %s
+""", (pais,))
+    destino = cursor.fetchone()[0]
+
+    close(conn, cursor)
+    return {
+        "custo": custo,
+        "origem": "Brasil",
+        "destino": destino
+    }
+    
+
+# ====================== rotas de exibição ======================
 
 # Mostra a página inicial
 @routes.route("/")
 def index():
-    return render_template('index.html')
+    resume = getResume()
+    return render_template('index.html', resume = resume)
 
 # ====================== ROTAS DE GET ======================
 

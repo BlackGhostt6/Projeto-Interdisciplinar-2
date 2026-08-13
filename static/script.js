@@ -1,5 +1,4 @@
-const links = document.querySelectorAll(".links");
-const darkModeToggle = document.getElementById("dark-mode-toggle");
+const darkModeToggle = document.getElementById("theme-toggle-btn");
 
 if (darkModeToggle) {
     darkModeToggle.addEventListener("click", () => {
@@ -20,13 +19,91 @@ if (darkModeToggle) {
     });
 }
 
-links.forEach(link => {
-    link.addEventListener("click", () => {
+const ctx = document.getElementById('depositosChart');
+new Chart(ctx, {
+    type: 'line',
+    data: {
+        labels: [
+            'Jun',
+            'Jul',
+            'Ago',
+            'Set',
+            'Out',
+            'Nov'
+        ],
+        datasets: [
+            {
+                label: 'Guardado',
+                data: [
+                    2000,
+                    4200,
+                    6800,
+                    8200,
+                    10200,
+                    12000
+                ],
+                borderColor: '#3CAEA3',
+                backgroundColor: 'rgba(60, 174, 163, 0.15)',
+                borderWidth: 3,
+                pointRadius: 4,
+                pointHoverRadius: 6,
+                tension: 0.4,
+                fill: true
+            },
+            {
+                label: 'Meta',
+                data: [
+                    15000,
+                    15000,
+                    15000,
+                    15000,
+                    15000,
+                    15000
+                ],
 
-        links.forEach(item => {
-            item.classList.remove("ativo");
-        });
+                borderColor: '#94A3B8',
+                borderWidth: 2,
 
-        link.classList.add("ativo");
-    });
+                borderDash: [6, 6],
+
+                pointRadius: 0,
+
+                fill: false
+            }
+        ]
+    },
+
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+            legend: {
+                display: true
+            },
+            tooltip: {
+                callbacks: {
+                    label: function(context) {
+                        return ' R$ ' +
+                            context.raw.toLocaleString('pt-BR');
+                    }
+                }
+            }
+        },
+        scales: {
+            y: {
+                beginAtZero: true,
+                ticks: {
+                    callback: function(value) {
+                        return 'R$ ' +
+                            value.toLocaleString('pt-BR');
+                    }
+                }
+            },
+            x: {
+                grid: {
+                    display: false
+                }
+            }
+        }
+    }
 });

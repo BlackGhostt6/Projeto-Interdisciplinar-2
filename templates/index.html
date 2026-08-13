@@ -3,29 +3,50 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="../static/style.css">
-    <link rel="shortcut icon" href="../static/img/favicon.png" type="image/x-png">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="shortcut icon" href="{{ url_for('static', filename='img/fav.png') }}" type="image/x-png">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@phosphor-icons/web@2.1.2/src/regular/style.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/lipis/flag-icons@7.3.2/css/flag-icons.min.css"/>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <title>teste</title>
 </head>
 <body>
-    <nav>
-        <div class="logo">
-            <img src="../static/img/favicon.png" alt="">
-        </div>
-        <div class="links ativo"><a href=""  data-menu="home"><i class="ph ph-house"></i><span>Início</span></a></div>
-        <div class="links "><a href="#resume-container" data-menu="viagem"><i class="ph ph-globe"></i><span>Viagens</span></a></div>
-        <div class="links "><a href="" data-menu="poupanca"><i class="ph ph-piggy-bank"></i><span>Poupança</span></a></div>
-        <div class="links "><a href="" data-menu="cotacao"><i class="ph ph-currency-dollar"></i><span>Cotações</span></a></div>
-        <div class="links "><a href="" data-menu="anotacoes"><i class="ph ph-note"></i><span>Anotações</span></a></div>
-        <div class="separed"><button id="dark-mode-toggle"><i class="ph ph-moon"></i><span>Modo Escuro</span></button></div>
-    </nav>
     <header>
-        <h1>TripPlan</h1>
+        <img src="{{ url_for('static', filename='img/favicon.png') }}" alt=""> <h1>TripPlan</h1>
+        <details class="user-menu" id="user">
+            <summary>
+                <i class="ph ph-user"></i>
+                <span>Usuario</span>
+                <i class="ph ph-caret-down"></i>
+            </summary>
+
+            <div class="user-options">
+                <a href="#">
+                    <i class="ph ph-user"></i>
+                    <span>Meu perfil</span>
+                </a>
+
+                <a href="#">
+                    <i class="ph ph-gear"></i>
+                    <span>Configurações</span>
+                </a>
+
+                <hr>
+
+                <a href="#" class="logout">
+                    <i class="ph ph-sign-out"></i>
+                    <span>Sair</span>
+                </a>
+            </div>
+        </details>
     </header>
+    
     <main>
-        <article><h2>Olá, Usuário</h2></article>
+        <button id="theme-toggle-btn"><i class="ph ph-moon"></i> Mudar tema</button>
+        <article id="title">
+            <h2>Olá, Usuário 👋</h2>
+            <p>Planeje sua próxima viagem</p>
+        </article>
         <section id="resume-container">
             <div class="card meta">
                 <div class="meta-img">
@@ -38,9 +59,9 @@
                         </div>
                         <p id="trip-goal">
                             <i class="ph ph-map-pin"></i>
-                            <span id="orign">Brasil</span>
+                            <span id="orign">{{resume.origem}}</span>
                             <i class="ph ph-arrow-right"></i>
-                            <span id="goal">Japão</span>
+                            <span id="goal">{{resume.destino}}</span>
                         </p>
                         <p id="trip-time">
                             <i class="ph ph-calendar"></i>
@@ -51,9 +72,9 @@
                 <div class="content">
                     <h4 style="font-weight: 500;">Meta da viagem</h4>
                     <div id="meta">
-                        <h3>R$ 15.000</h3>
+                        <h3>R$ {{resume.custo}}</h3>
                         <div id="progress-meta">
-                            <progress value="10200" max="15000"></progress>
+                            <progress value="200" max="{{resume.custo}}"></progress>
                             <p id="guardado"><span class="valor">R$ 10.200</span> guardados</p>
                         </div>
                         <div class="target">
@@ -93,17 +114,54 @@
         </section>
 
         <section id="dash-container">
-            <section class="dash graph">
-                <h2>teste</h2>
-            </section>
+            <div class="card deposito-card">
+                <h3>Resumo dos depósitos</h3>
+                <div class="grafico">
+                    <canvas id="depositosChart"></canvas>
+                </div>
+            </div>
             <section class="dash quick">
-                <h2>teste</h2>
+                <h3>Ações rápidas</h3>
+                <div class="actions">
+                    <button class="quick-btn">
+                        <i class="ph ph-plus"></i>
+                        <div class="button-desc">
+                            <h3>Adicionar dinheiro</h3>
+                            <p>Guardar dinheiro na poupança</p>
+                        </div>
+                    </button>
+                    <button class="quick-btn">
+                        <i class="ph ph-note"></i>
+                        <div class="button-desc">
+                            <h3>Minhas anotações</h3>
+                            <p>Ver todas as anotações</p>
+                        </div>
+                    </button>
+                    <button class="quick-btn">
+                        <i class="ph ph-clock"></i>
+                        <div class="button-desc">
+                            <h3>Ver movimentações</h3>
+                            <p>Visualizar todas as transações</p>
+                        </div>
+                    </button>
+                    <button class="quick-btn">
+                        <i class="ph ph-note-pencil"></i>
+                        <div class="button-desc">
+                            <h3>Editar viagem</h3>
+                            <p>Modificar detalhes da viagem</p>
+                        </div>
+                    </button>
+                </div>
+                <div class="quick-notes">
+                    <article><i class="ph ph-note-pencil"></i><h3>Anotação rápida</h3></article>
+                    <textarea name="quick-note" id="quick-note" cols="30" rows="10" placeholder="Escreva aqui..."></textarea>
+                </div>
             </section>
         </section>
     </main>
     <footer>
 
     </footer>
-    <script src="../static/script.js"></script>
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
 </body>
 </html>
