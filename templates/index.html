@@ -3,9 +3,107 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="../static/style.css">
+    <link rel="shortcut icon" href="../static/img/favicon.png" type="image/x-png">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@phosphor-icons/web@2.1.2/src/regular/style.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/lipis/flag-icons@7.3.2/css/flag-icons.min.css"/>
     <title>teste</title>
 </head>
 <body>
-    <h1>teste</h1>
+    <nav>
+        <div class="logo">
+            <img src="../static/img/favicon.png" alt="">
+        </div>
+        <div class="links ativo"><a href=""  data-menu="home"><i class="ph ph-house"></i><span>Início</span></a></div>
+        <div class="links "><a href="#resume-container" data-menu="viagem"><i class="ph ph-globe"></i><span>Viagens</span></a></div>
+        <div class="links "><a href="" data-menu="poupanca"><i class="ph ph-piggy-bank"></i><span>Poupança</span></a></div>
+        <div class="links "><a href="" data-menu="cotacao"><i class="ph ph-currency-dollar"></i><span>Cotações</span></a></div>
+        <div class="links "><a href="" data-menu="anotacoes"><i class="ph ph-note"></i><span>Anotações</span></a></div>
+        <div class="separed"><button id="dark-mode-toggle"><i class="ph ph-moon"></i><span>Modo Escuro</span></button></div>
+    </nav>
+    <header>
+        <h1>TripPlan</h1>
+    </header>
+    <main>
+        <article><h2>Olá, Usuário</h2></article>
+        <section id="resume-container">
+            <div class="card meta">
+                <div class="meta-img">
+                    <section class="meta-content">
+                        <div class="title-country">
+                            <div id="flag-circle">
+                                <i id="flag" class="fi fi-jp"></i>
+                            </div>
+                            <span id="name-country">Japão</span>
+                        </div>
+                        <p id="trip-goal">
+                            <i class="ph ph-map-pin"></i>
+                            <span id="orign">Brasil</span>
+                            <i class="ph ph-arrow-right"></i>
+                            <span id="goal">Japão</span>
+                        </p>
+                        <p id="trip-time">
+                            <i class="ph ph-calendar"></i>
+                            <span id="time">15 dias de viagem</span>
+                        </p>
+                    </section>
+                </div>
+                <div class="content">
+                    <h4 style="font-weight: 500;">Meta da viagem</h4>
+                    <div id="meta">
+                        <h3>R$ 15.000</h3>
+                        <div id="progress-meta">
+                            <progress value="10200" max="15000"></progress>
+                            <p id="guardado"><span class="valor">R$ 10.200</span> guardados</p>
+                        </div>
+                        <div class="target">
+                            <i class="ph ph-target"></i>
+                            <article id=target-desc>
+                                <h4>Faltam R$ 4.800 para sua meta</h4>
+                                <p>Continue assim! Você está no caminho certo.</p>
+                            </article>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <button class="cards guardado">
+                <h4 class="card-title">Guardado</h4>
+                <div class="icone-card poupanca-i">
+                    <i class="ph ph-piggy-bank"></i>
+                </div>
+                <span>R$ 10.200</span>
+                <p>+ 500 este mês</p>
+            </button>
+            <button class="cards cotacao">
+                <h4 class="card-title">Cotação hoje</h4>
+                <div class="icone-card cotacao-i">
+                    <i class="ph ph-currency-dollar"></i>
+                </div>
+                <span>¥ 1 = R$ 0,0352</span>
+                <p>+ 0,45%</p>
+            </button>
+            <button class="cards viagem">
+                <h4 class="card-title">Sua viagem</h4>
+                <div class="icone-card viagem-i">
+                    <i class="ph ph-calendar"></i>
+                </div>
+                <span>15 dias</span>
+                <p>31/12/2028 - 05/02/2029</p>
+            </button>
+        </section>
+
+        <section id="dash-container">
+            <section class="dash graph">
+                <h2>teste</h2>
+            </section>
+            <section class="dash quick">
+                <h2>teste</h2>
+            </section>
+        </section>
+    </main>
+    <footer>
+
+    </footer>
+    <script src="../static/script.js"></script>
 </body>
 </html>

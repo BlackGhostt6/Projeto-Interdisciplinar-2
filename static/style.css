@@ -1,1 +1,526 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
 
+*{
+    color: var(--text);
+    font-family: 'Poppins', sans-serif;
+    font-weight: 200;
+    box-sizing: border-box;
+}
+:root {
+    --primary: #0b2846;
+    --hover: rgba(82, 104, 128, 0.54);
+    --secondary: #20639B;
+    --accent: #3CAEA3;
+    --accent-text: #2e8980;
+    --tertiary: #7721b1;
+    --success: #2E9B68;
+    --warning: #F6A623;
+    --danger: #E45756;
+    --background: #F5F7FA;
+    --card: #FFFFFF;
+    --border: #eff2f7;
+    --border-header: #dadce1;
+    --text: #17202A;
+    --text-secondary: #64748B;
+    --text-light: #94A3B8;
+    --white: #FFFFFF;
+}
+
+body.dark-mode {
+    --primary: #101b2a;
+    --hover: rgba(148, 163, 184, 0.2);
+    --secondary: #5eaaf0;
+    --accent: #38b5b0;
+    --accent-text: #86ece3;
+    --success: #67d99a;
+    --warning: #f6c869;
+    --danger: #ff8e8e;
+    --background: #07111c;
+    --card: #0d1a2b;
+    --border: #1f2f46;
+    --border-header: #1f2f46;
+    --text: #edf5ff;
+    --text-secondary: #b4c3d7;
+    --text-light: #d0d9e5;
+    --white: #f8fbff;
+}
+
+body{
+    width: 100%;
+    background-color: var(--background);
+    color: var(--text);
+    height: 100vh;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    overflow-x: hidden;
+    transition: background-color 0.25s ease, color 0.25s ease;
+}
+
+header{
+    width: 100%;
+    height: fit-content;
+    border-bottom: var(--border-header) 1px solid;
+    padding-left: 7%;
+}
+
+main{
+    padding-left: 7%;
+}
+
+.meta img{
+    width: 20%;
+}
+
+
+.dash-container{
+    display: flex;
+    flex-direction: row;
+}
+
+.card{
+    border: 1px solid var(--border);
+    border-radius: 15px;
+    overflow: hidden;
+}
+
+.meta{
+    display: flex;
+    width: 50%;
+    height: 100%;
+    flex-direction: row;
+    position: relative;
+}
+
+.meta-img{
+    width: 40%;
+    height: 100%;
+    background-image: url(https://sitecontent.kumon.com.br/site/general/638814864529335322_cultura-japonesa.jpg?width=100);
+    background-size: cover;
+    background-position: center;
+    position: relative;
+}
+
+.meta-content{
+    position: absolute;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+    height: 55%;
+    gap:15px;
+    bottom: 0;
+    left: 0;
+   background: linear-gradient(transparent, rgba(0,0,0, .95));
+}
+
+#name-country{
+    color: var(--white);
+    font-weight: 700;
+    font-size: x-large;
+    -webkit-text-stroke: 1px rgba(0, 0, 0, 0.61);
+}
+
+.title-country{
+    display: grid;
+    grid-template-columns: 3rem 1fr;
+    gap: 10px;
+    place-items: center;
+}
+
+#trip-goal,
+#trip-goal i,
+#trip-goal span {
+    color: white;
+    font-size: .9rem;
+    font-weight: 100;
+}
+
+p{
+    margin: 0;
+    padding:0;
+}
+
+#trip-time,
+#trip-time i,
+#trip-time span {
+    color: white;
+    font-size: .9rem;
+    font-weight: 100;
+}
+
+#flag-circle{
+    width: 2.6rem;
+    height:2.6rem;
+    border-radius: 50%;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+#flag{
+    width: 100%;
+    height: 100%;
+    background-size: cover;
+    background-position: center;
+}
+
+.content{
+    background: var(--card);
+    position: absolute;
+    right: 0;
+    top: 0;
+    width:60%;
+    height: 100%;
+    padding-left: 2%;
+}
+
+.content h3{
+    font-weight: 600;
+    font-size: xx-large;
+    margin: 0;
+    padding: 0;
+}
+
+#meta{
+    width: 95%;
+}
+
+#resume-container{
+    display: flex;
+    flex-direction: row;
+    height: 80%;
+    width: 100%;
+    gap: 1.8%
+}
+
+progress{
+    width: 100%;
+    height: 10px;
+    border:none;
+    appearance: none;
+    -webkit-appearance: none;
+}
+
+#guardado span{
+    font-weight: 600;
+}
+
+progress::-webkit-progress-bar{
+    background: var(--border);
+    border-radius: 20px;
+}
+
+progress::-webkit-progress-value{
+    background: var(--accent);
+    border-radius: 20px;
+}
+
+.target{
+    display: grid;
+    grid-template-columns: 20px 1fr;
+    place-items: center;
+    margin-top: .6rem;
+    padding: .9rem;
+    background:rgb(from var(--accent) r g b / 20%);
+    border-radius: 15px;
+}
+
+#target-desc{
+    display: flex;
+    flex-direction: column;
+    width: 89%;
+    padding: 0;
+}
+
+.logo{
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+img{
+    object-fit: cover;
+    width: 2.7rem;
+}
+
+#target-desc h4{
+    margin: 0;
+    padding: 0; 
+    font-size: .9rem;
+    font-weight: 450;
+}
+
+#target-desc p{
+    margin: 0;
+    padding: 0;
+    font-size: .7rem;
+}
+
+
+.target i{
+    font-size: 2rem;
+    color: var(--accent-text);
+}
+
+nav {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 4.5rem;
+    height: 100vh;
+    background-color: var(--primary);
+    padding: .9rem;
+    display: flex;
+    flex-direction: column;
+    gap: 3%;
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    transition: all 0.35s ease-in-out;
+    z-index: 100;
+}
+
+nav:hover {
+    width: 12rem;
+}
+
+nav:hover #dark-mode-toggle {
+    justify-content: flex-start;
+    padding: 0 .5rem;
+    gap: 15px;
+}
+
+nav:hover #dark-mode-toggle span {
+    display: inline;
+    opacity: 1;
+}
+
+.links {
+    width: 100%;
+    height: 2.5rem;
+    display: flex;
+    overflow: hidden;
+}
+
+.links a {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    padding: 0 .5rem;
+    border-radius: 10px;
+}
+
+.links:hover{
+    background-color: var(--hover);
+    border-radius: 10px;
+}
+
+.separed:hover{
+    background: none;
+}
+
+.separed {
+    position: absolute;
+    bottom: 20px;
+    width: 100%;
+    height: 2.5rem;
+    display: flex;
+    overflow: hidden;
+}
+
+#dark-mode-toggle {
+    width: 100%;
+    height: 2.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    border: none;
+    border-radius: 10px;
+    background: transparent;
+    cursor: pointer;
+    margin-left: 5%;
+    transition: background-color 0.2s ease, transform 0.2s ease;
+}
+
+#dark-mode-toggle i {
+    font-size: 1.7rem;
+    color: var(--text-light);
+    flex-shrink: 0;
+}
+
+#dark-mode-toggle:hover {
+    background: var(--hover);
+    border-radius: 10px;
+    width: 90%;
+}
+
+#dark-mode-toggle span {
+    color: var(--white);
+    opacity: 0;
+    white-space: nowrap;
+    transition: opacity .35s ease;
+}
+
+nav:hover #dark-mode-toggle span {
+    opacity: 1;
+}
+
+.links.ativo {
+    background-color: var(--accent);
+    border-radius: 10px;
+}
+
+.links.ativo i {
+    color: var(--white);
+}
+
+a{
+    text-decoration: none;
+}
+
+.separed span {
+    display: none;
+    white-space: nowrap;
+    color: var(--white);
+    transition: opacity .35s ease;
+}
+
+nav:hover .separed span {
+    opacity: 1;
+}
+
+.links i {
+    min-width: 1.7rem;
+    font-size: 1.7rem;
+    color: var(--text-light);
+    text-align: center;
+}
+
+.links span {
+    opacity: 0;
+    white-space: nowrap;
+    transition: opacity .35s ease;
+    color: var(--white);
+}
+
+nav:hover .links span {
+    opacity: 100;
+}
+
+h1{
+    font-weight: 500;
+}
+
+.cards{
+    display: flex;
+    flex-direction: column;
+    width: 13vw;
+    height: 100%;
+    padding-top: 70px;
+    background: var(--card);
+    border-radius: 15px;
+    border: 1px solid var(--border);
+    align-items: center;
+    position: relative;
+    gap: 8%
+}
+
+.card-title{
+    position: absolute;
+    top: 15px;
+    left:15px;
+    margin: 0;
+    font-weight: 500;
+}
+
+.icone-card{
+    width: 4rem;
+    height: 4rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    font-size: 2.5rem;
+}
+
+/* Estilos do card de poupança */
+
+.poupanca-i{
+     background:rgb(from var(--success) r g b / 20%);
+}
+
+.poupanca-i i{
+    color: var(--success)
+}
+
+.guardado span{
+    font-weight: 600;
+    color: var(--success);
+    text-align: center;
+}
+
+.cards p{
+    font-size: smaller;
+}
+
+.cards span{
+    font-size: 1.4rem;
+}
+
+/* Estilos do card de cotação */
+
+.cotacao-i{
+     background:rgb(from var(--secondary) r g b / 20%);
+}
+
+.cotacao-i i{
+    color: var(--secondary)
+}
+
+.cotacao span{
+    font-weight: 600;
+    color: var(--secondary);
+    text-align: center;
+}
+
+/* Estilos do card de viagem */
+
+.viagem-i{
+     background:rgb(from var(--tertiary) r g b / 20%);
+}
+
+.viagem-i i{
+    color: var(--tertiary)
+}
+
+.viagem span{
+    font-weight: 600;
+    color: var(--tertiary);
+    text-align: center;
+}
+
+button{
+    cursor: pointer;
+}
+
+button:hover{
+    background-color:rgb(from var(--hover) r g b / 3%);
+}
+
+#dash-container{
+    display: flex;
+    flex-direction: row;
+    width: 100%;
+    height: 100%;
+}
+
+.dash{
+    height: 100%
+}
