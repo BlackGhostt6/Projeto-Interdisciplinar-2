@@ -7,6 +7,7 @@
     <link rel="shortcut icon" href="{{ url_for('static', filename='img/fav.png') }}" type="image/x-png">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@phosphor-icons/web@2.1.2/src/regular/style.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/lipis/flag-icons@7.3.2/css/flag-icons.min.css"/>
+    <script src="https://kit.fontawesome.com/a3a9f84800.js" crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <title>teste</title>
 </head>
@@ -16,7 +17,7 @@
         <details class="user-menu" id="user">
             <summary>
                 <i class="ph ph-user"></i>
-                <span>Usuario</span>
+                <span>{{dash.nome}}</span>
                 <i class="ph ph-caret-down"></i>
             </summary>
 
@@ -25,14 +26,7 @@
                     <i class="ph ph-user"></i>
                     <span>Meu perfil</span>
                 </a>
-
-                <a href="#">
-                    <i class="ph ph-gear"></i>
-                    <span>Configurações</span>
-                </a>
-
                 <hr>
-
                 <a href="#" class="logout">
                     <i class="ph ph-sign-out"></i>
                     <span>Sair</span>
@@ -43,8 +37,16 @@
     
     <main>
         <button id="theme-toggle-btn"><i class="ph ph-moon"></i> Mudar tema</button>
+        <form action="/" id="id-viagem" method="GET">
+            <select name="viagem" onchange="this.form.submit()">
+                <option value="1" {% if id_viagem == 1 %}selected{% endif %}>Japão</option>
+                <option value="2" {% if id_viagem == 2 %}selected{% endif %}>EUA</option>
+                <option value="3" {% if id_viagem == 3 %}selected{% endif %}>França</option>
+                <option value="4" {% if id_viagem == 4 %}selected{% endif %}>Coreia do Sul</option>
+            </select>
+        </form>
         <article id="title">
-            <h2>Olá, Usuário 👋</h2>
+            <h2>Olá, {{dash.nome}} 👋</h2>
             <p>Planeje sua próxima viagem</p>
         </article>
         <section id="resume-container">
@@ -53,34 +55,36 @@
                     <section class="meta-content">
                         <div class="title-country">
                             <div id="flag-circle">
-                                <i id="flag" class="fi fi-jp"></i>
+                                <i id="flag" class="fi fi-{{dash.sigla}}"></i>
                             </div>
-                            <span id="name-country">Japão</span>
+                            <span id="name-country">{{dash.destino}}</span>
                         </div>
-                        <p id="trip-goal">
+                        <p id="trip-goal">   
                             <i class="ph ph-map-pin"></i>
-                            <span id="orign">{{resume.origem}}</span>
+                            <span id="orign">{{dash.origem}}</span>
                             <i class="ph ph-arrow-right"></i>
-                            <span id="goal">{{resume.destino}}</span>
+                            <span id="goal">{{dash.destino}}</span>
                         </p>
                         <p id="trip-time">
                             <i class="ph ph-calendar"></i>
-                            <span id="time">15 dias de viagem</span>
+                            <span id="time">{{dash.dias}} dias de viagem</span>
                         </p>
                     </section>
                 </div>
                 <div class="content">
                     <h4 style="font-weight: 500;">Meta da viagem</h4>
                     <div id="meta">
-                        <h3>R$ {{resume.custo}}</h3>
+                        <h3>R$ {{dash.custo}}</h3>
                         <div id="progress-meta">
-                            <progress value="200" max="{{resume.custo}}"></progress>
-                            <p id="guardado"><span class="valor">R$ 10.200</span> guardados</p>
+                            <progress value="{{dash.guardado}}" max="{{dash.custo}}"></progress>
+                            <p id="guardado"><span class="valor">R$ {{dash.guardado}}</span> guardados</p>
+                            <p id="percent">{{"%.1f"|format(percent)|replace('.', ',')}}%</p>
+
                         </div>
                         <div class="target">
                             <i class="ph ph-target"></i>
                             <article id=target-desc>
-                                <h4>Faltam R$ 4.800 para sua meta</h4>
+                                <h4>{{dash.target}}</h4>
                                 <p>Continue assim! Você está no caminho certo.</p>
                             </article>
                         </div>
@@ -92,24 +96,24 @@
                 <div class="icone-card poupanca-i">
                     <i class="ph ph-piggy-bank"></i>
                 </div>
-                <span>R$ 10.200</span>
-                <p>+ 500 este mês</p>
+                <span>R$ {{dash.guardado}}</span>
+                <p>{{ '-' if dash.ultimo_mes <= 0 else '+' }} R$ {{dash.ultimo_mes}} este mês</p>
             </button>
             <button class="cards cotacao">
                 <h4 class="card-title">Cotação hoje</h4>
                 <div class="icone-card cotacao-i">
                     <i class="ph ph-currency-dollar"></i>
                 </div>
-                <span>¥ 1 = R$ 0,0352</span>
-                <p>+ 0,45%</p>
+                <span> R$ 1 = {{dash.simbolo}} {{cotacao}}</span>
+                <p>{{variacao}}%</p>
             </button>
             <button class="cards viagem">
                 <h4 class="card-title">Sua viagem</h4>
                 <div class="icone-card viagem-i">
                     <i class="ph ph-calendar"></i>
                 </div>
-                <span>15 dias</span>
-                <p>31/12/2028 - 05/02/2029</p>
+                <span>{{dash.dias}} dias</span>
+                <p>{{dash.ida.strftime('%d/%m/%Y')}} - {{dash.volta.strftime('%d/%m/%Y')}}</p>
             </button>
         </section>
 
@@ -145,10 +149,10 @@
                         </div>
                     </button>
                     <button class="quick-btn">
-                        <i class="ph ph-note-pencil"></i>
+                        <i class="ph ph-airplane"></i>
                         <div class="button-desc">
-                            <h3>Editar viagem</h3>
-                            <p>Modificar detalhes da viagem</p>
+                            <h3>Minhas viagens</h3>
+                            <p>Ver, editar ou modificar suas viagens</p>
                         </div>
                     </button>
                 </div>
@@ -160,8 +164,13 @@
         </section>
     </main>
     <footer>
-
+        <a href="https://github.com/BlackGhostt6/Projeto-Interdisciplinar-2"><i class="fa fa-github"></i> GitHub</a>
     </footer>
     <script src="{{ url_for('static', filename='script.js') }}"></script>
+    <style>
+    .meta-img {
+        background-image: url("{{ dash.imagem }}");
+    }
+</style>
 </body>
 </html>

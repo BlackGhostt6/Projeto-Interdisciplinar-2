@@ -129,7 +129,6 @@ main{
 .meta-img{
     width: 40%;
     height: 100%;
-    background-image: url(https://sitecontent.kumon.com.br/site/general/638814864529335322_cultura-japonesa.jpg?width=100);
     background-size: cover;
     background-position: center;
     position: relative;
@@ -456,9 +455,9 @@ button:hover{
     background: var(--card);
     display: flex;
     align-items: center;
-    justify-content: center;
+    justify-content: left;
     gap: 10px;
-    padding: 0 .8rem;
+    padding: 0 .8rem 0 1.2rem;
     border-radius: 10px;
     border: 1px solid var(--border);
 }
@@ -543,6 +542,61 @@ textarea:focus {
     position: absolute;
     top: 2rem;
     right: 0;
+}
+
+#id-viagem{
+    width: 10rem;
+    height: 3rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 15px;
+    padding: 0;
+    border-radius: 20px;
+    background-color: var(--accent);
+    border: none;
+    color: var(--text-light);
+    text-align: center;
+    cursor: pointer;
+    color: var(--white);
+    position: absolute;
+    top: 2rem;
+    right: 11vw;
+}
+
+#percent{
+    position: absolute;
+    right: 0;
+    top:1.5rem;
+    color: var(--accent-text);
+}
+
+#progress-meta{
+    position: relative;
+}
+
+select{
+    background-color: transparent;
+    color: var(--white);
+    width: 100%;
+    height: 100%;
+    border: none;
+    border-radius: 20px;
+    padding: 0 1rem;
+    cursor: pointer;
+}
+
+select:focus{
+    border: none;
+}
+footer{
+    margin: 2rem;
+}
+
+option{
+    background-color: var(--background);
+    color:var(--text);
+    cursor: pointer;
 }
 
 #theme-toggle-btn i {
