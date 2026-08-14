@@ -1,6 +1,6 @@
 from flask import Blueprint, render_template, request, jsonify, send_file, session, redirect, url_for
 from database import get_db_connection, connection, close
-from utils.currency import get_cotacao, get_variacao_cotacao
+from utils.currency import get_cotacao, get_variacao_cotacao, moeda
 import json
 from dotenv import load_dotenv
 from datetime import datetime, timedelta, date
@@ -13,6 +13,14 @@ routes = Blueprint("routes", __name__)
 def getDash(id):
     conn, cursor = connection()
     user = 1
+
+    cursor.execute("""SELECT DATEDIFF(data_viagem, CURDATE()) AS dias_restantes
+    FROM viagem
+    WHERE id_viagem = %s;""",(id,))
+    dias_restantes =cursor.fetchone()[0]
+
+    cursor.execute("select anotacao as nota from anotacoes where id_viagem = %s  ORDER BY id_nota DESC LIMIT 5;", (id,))
+    notas = cursor.fetchall()  
 
     cursor.execute("select v.id_destino, p.pais from viagem as v inner join paises as p on v.id_destino = p.id_pais  where id_viagem = %s ", (id,))
     pais = cursor.fetchone()[1]
@@ -35,7 +43,18 @@ def getDash(id):
 """, (pais,))
     destino = cursor.fetchone() 
 
-    cursor.execute("select sum(valor) as total from movimentacoes where id_viagem = %s;", (id,))
+    cursor.execute("""
+    SELECT COALESCE(
+        SUM(
+            CASE
+                WHEN tipo = 'deposito' THEN valor
+                WHEN tipo = 'retirada' THEN -valor
+            END 
+        ), 0
+    ) AS total
+    FROM movimentacoes
+    WHERE id_viagem = %s
+""", (id,))
     guardado = cursor.fetchone()[0]
 
     cursor.execute("select sum(valor) as qtd from movimentacoes where data_move >= DATE_SUB(CURDATE(), INTERVAL 1 MONTH) AND id_viagem = %s;", (id,))
@@ -52,18 +71,12 @@ def getDash(id):
     cursor.execute("select * from usuarios where id_user = %s", (user,))
     nome = cursor.fetchone()[1]
 
-    if guardado < custo:
-        target= f'Faltam R${custo-guardado} para sua meta'
-    else:
-        target= "Sua meta foi alcançada!"
-
     close(conn, cursor)
     return {
         "custo": custo,
         "origem": "Brasil",
         "destino": destino[0],
         "guardado": guardado,
-        "target": target, 
         "imagem": imagem,
         "sigla": sigla,
         "nome": nome,
@@ -72,7 +85,9 @@ def getDash(id):
         "dias": datas[0],
         "ida": datas[1],
         "volta": datas[2],
-        "ultimo_mes": ultimo_mes
+        "ultimo_mes": ultimo_mes,
+        "dias_restantes": dias_restantes,
+        "notas": notas
     }
 
 # ====================== rotas de exibição ======================
@@ -80,12 +95,20 @@ def getDash(id):
 # Mostra a página inicial
 @routes.route("/")
 def index():
-    id_viagem = request.args.get("viagem", 1, type=int)
+    id_viagem = request.args.get("viagem", type=int)
+    if id_viagem is None:
+        return redirect(url_for("routes.index", viagem=1))
     dash = getDash(id_viagem)
-    percent = round((dash['guardado']/dash['custo'])*100, 1)
+    meta = dash['custo']*dash['dias']
+    percent = round((dash['guardado']/meta)*100, 1)
     cotacao = get_cotacao("brl", dash['cotacao'])
     variacao=get_variacao_cotacao("brl", dash['cotacao'])
-    return render_template('index.html', dash = dash, cotacao = cotacao, variacao =variacao, id_viagem=id_viagem, percent = percent)
+    if dash['guardado'] < meta:
+        target= f'Faltam R${moeda(meta-dash['guardado'])} para sua meta'
+    else:
+        target= "Sua meta foi alcançada!"
+
+    return render_template('index.html', dash = dash, cotacao = cotacao, variacao =variacao, target= target, meta = meta, id_viagem=id_viagem, percent = percent)
 
 # ====================== ROTAS DE GET ======================
 
@@ -223,7 +246,35 @@ def getMovement():
 
 # ====================== ROTAS DE POST ===========''===========
 
+@routes.route("/api/movimentacao", methods=['POST'])
+def movimentacao():
+    conn, cursor= connection()
+    dados = request.form.to_dict()
 
+    cursor.execute("""
+        INSERT INTO movimentacoes (id_viagem, valor, tipo) VALUES (%s, %s, %s)
+""", (dados['id_viagem'], dados['valor'], dados['tipo'],))
+
+    conn.commit()
+
+    close(conn, cursor)
+
+    return redirect(url_for("routes.index", viagem=dados['id_viagem']))
+
+@routes.route("/api/anotacao", methods=['POST'])
+def acotacao():
+    conn, cursor= connection()
+    dados = request.get_json()
+
+    cursor.execute("""
+        INSERT INTO anotacoes (id_viagem, anotacao) VALUES (%s, %s)
+""", (dados['id_viagem'], dados['anotacao'],))
+
+    conn.commit()
+
+    close(conn, cursor)
+
+    return {"sucesso": True}
 
 # ====================== ROTAS DE PUT ======================
 

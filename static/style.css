@@ -418,8 +418,9 @@ button:hover{
     padding: .5rem 0 1.5rem 1.5rem
 }
 
-.deposito-card {
+.notas {
     min-width: 50%;
+    max-width: 50%;
     height: 49vh;
     padding: 1.5rem;
     background: var(--card);
@@ -427,8 +428,43 @@ button:hover{
     border: var(--border) 1px solid;
 }
 
-.deposito-card h3 {
-    margin: 0 0 1rem;
+.nota{
+    width: fit-content;
+    max-width: 100%;
+    height: 5rem;
+    background: var(--background);
+    border-radius: 10px;
+    border: var(--border) 1px solid;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 .8rem 0 1.2rem;
+    transition: transform .35s ease;
+}
+
+.nota p{
+    overflow-wrap: anywhere;
+}
+
+.notas-container{
+    display: flex;
+    flex-direction: row;
+    gap: .6rem;
+    row-gap: .3rem;
+    width: 100%;
+    height: 100%;
+    flex-wrap: wrap;
+    align-content: flex-start;
+    overflow-y: auto;
+}
+
+.notas-container::-webkit-scrollbar {
+    display: none;
+}
+
+.notas h3 {
+    margin: 0 0 .5rem;
     font-weight: 600;
 }
 
@@ -682,4 +718,152 @@ option{
 
 .user-menu[open] .ph-caret-down {
     transform: rotate(180deg);
+}
+
+.close{
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    border-radius: 50%;
+    font-size: x-large;
+    border: none;
+    color: var(--white);
+    background: none;
+}
+dialog {
+    width: min(450px, 90vw);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 0;
+    background: var(--card);
+    color: var(--text);
+    box-shadow: 0 20px 60px rgba(0, 0, 0, .2);
+}
+
+dialog::backdrop {
+    backdrop-filter: blur(4px);
+}
+
+dialog[open] {
+    animation: modal-in .25s ease;
+}
+
+dialog h2 {
+    margin: 0;
+    padding: 1.5rem 1.7rem;
+    border-bottom: 1px solid var(--border);
+    font-size: 1.35rem;
+    font-weight: 600;
+}
+
+dialog form {
+    display: grid;
+    gap: 8px;
+    padding: 1.5rem 1.7rem 1.7rem;
+}
+
+dialog label {
+    margin-top: 8px;
+    font-size: .85rem;
+    font-weight: 500;
+    color: var(--text-secondary);
+}
+
+dialog input,
+dialog select,
+dialog textarea {
+    width: 100%;
+    box-sizing: border-box;
+    padding: .75rem .9rem;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    outline: none;
+    background: var(--background);
+    color: var(--text);
+    font-family: inherit;
+    font-size: .9rem;
+    transition: border .2s ease, box-shadow .2s ease, background .2s ease;
+}
+
+dialog input:focus,
+dialog select:focus,
+dialog textarea:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgb(from var(--accent) r g b / 15%);
+}
+
+dialog input::placeholder,
+dialog textarea::placeholder {
+    color: var(--text-light);
+}
+
+dialog textarea {
+    min-height: 110px;
+    resize: vertical;
+}
+
+dialog .modal-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 15px;
+    padding-top: 15px;
+    border-top: 1px solid var(--border);
+}
+
+dialog button,
+form button {
+    border: none;
+    border-radius: 10px;
+    padding: .7rem 1rem;
+    font-family: inherit;
+    font-size: .85rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: transform .2s ease, background .2s ease, opacity .2s ease;
+}
+
+dialog button:hover,
+form button:hover {
+    transform: translateY(-1px);
+}
+
+dialog button[type="submit"],
+form button[type="submit"] {
+    background: var(--accent);
+    color: var(--white);
+}
+
+dialog button[type="submit"]:hover,
+form button[type="submit"]:hover {
+    background: var(--accent-text);
+}
+
+dialog button[type="button"] {
+    background: var(--border);
+    color: var(--text);
+}
+
+dialog button[type="button"]:hover {
+    background: var(--text-light);
+}
+
+dialog input:invalid:not(:placeholder-shown) {
+    border-color: var(--danger);
+}
+
+dialog input:valid:not(:placeholder-shown) {
+    border-color: var(--success);
+}
+
+@keyframes modal-in {
+    from {
+        opacity: 0;
+        transform: translateY(-15px) scale(.98);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
 }

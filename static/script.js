@@ -43,78 +43,31 @@ if (darkModeToggle) {
         localStorage.setItem("theme", isDarkMode ? "dark" : "light");
     });
 }
+const textarea = document.getElementById("new-note");
+const params = new URLSearchParams(window.location.search);
+const idViagem = params.get("viagem");
+textarea.addEventListener("keydown", async (event) => {
+    console.log("tecla:", event.key);
 
-const canvas = document.getElementById("depositosChart");
-
-async function carregarGrafico(id) {
-    try {
-        const resposta = await fetch("/api/depositos/" + id);
-        const dados = await resposta.json();
-
-        let acumulado = 0;
-        const labels = [];
-        const valores = [];
-
-        dados.forEach(item => {
-            labels.push(item[0]);
-            acumulado += Number(item[1]);
-            valores.push(acumulado);
-        });
-
-        new Chart(canvas, {
-            type: "line",
-            data: {
-                labels: labels,
-                datasets: [{
-                    label: "Guardado",
-                    data: valores,
-                    borderColor: "#3CAEA3",
-                    backgroundColor: "rgba(60, 174, 163, 0.15)",
-                    borderWidth: 3,
-                    pointRadius: 4,
-                    pointHoverRadius: 6,
-                    tension: 0.4,
-                    fill: true
-                }]
+    if (event.key === "Enter" && !event.shiftKey) {
+        event.preventDefault();
+        const anotacao = textarea.value.trim();
+        console.log("anotacao:", anotacao);
+        console.log("id viagem:", idViagem)
+        if (!anotacao) return;
+        const resposta = await fetch("/api/anotacao", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
             },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    tooltip: {
-                        callbacks: {
-                            label: function(context) {
-                                return " R$ " + Number(context.raw).toLocaleString("pt-BR", {
-                                    minimumFractionDigits: 2,
-                                    maximumFractionDigits: 2
-                                });
-                            }
-                        }
-                    }
-                },
-                scales: {
-                    y: {
-                        beginAtZero: true,
-                        ticks: {
-                            callback: function(value) {
-                                return "R$ " + Number(value).toLocaleString("pt-BR");
-                            }
-                        }
-                    },
-                    x: {
-                        grid: {
-                            display: false
-                        }
-                    }
-                }
-            }
+            body: JSON.stringify({
+                id_viagem: idViagem,
+                anotacao: anotacao
+            })
         });
-    } catch (erro) {
-        console.error("Erro no gráfico:", erro);
+        if (resposta.ok) {
+            textarea.value = "";
+            location.reload();
+        }
     }
-}
-
-const form = document.getElementById("id-viagem");
-const select = form.querySelector("select");
-
-carregarGrafico(select.value);
+});

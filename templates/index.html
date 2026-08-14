@@ -67,71 +67,105 @@
                         </p>
                         <p id="trip-time">
                             <i class="ph ph-calendar"></i>
-                            <span id="time">{{dash.dias}} dias de viagem</span>
+                            <span id="time">{{dash.dias_restantes}} dias para a viagem</span>
                         </p>
                     </section>
                 </div>
                 <div class="content">
                     <h4 style="font-weight: 500;">Meta da viagem</h4>
                     <div id="meta">
-                        <h3>R$ {{dash.custo}}</h3>
+                        <h3>R$ {{meta|moeda}}</h3>
                         <div id="progress-meta">
-                            <progress value="{{dash.guardado}}" max="{{dash.custo}}"></progress>
-                            <p id="guardado"><span class="valor">R$ {{dash.guardado}}</span> guardados</p>
+                            <progress value="{{dash.guardado}}" max="{{meta}}"></progress>
+                            <p id="guardado"><span class="valor">R$ {{dash.guardado|moeda}}</span> guardados</p>
                             <p id="percent">{{"%.1f"|format(percent)|replace('.', ',')}}%</p>
 
                         </div>
                         <div class="target">
                             <i class="ph ph-target"></i>
                             <article id=target-desc>
-                                <h4>{{dash.target}}</h4>
+                                <h4>{{target}}</h4>
                                 <p>Continue assim! Você está no caminho certo.</p>
                             </article>
                         </div>
                     </div>
                 </div>
             </div>
-            <button class="cards guardado">
+            <div class="cards guardado">
                 <h4 class="card-title">Guardado</h4>
                 <div class="icone-card poupanca-i">
                     <i class="ph ph-piggy-bank"></i>
                 </div>
-                <span>R$ {{dash.guardado}}</span>
-                <p>{{ '-' if dash.ultimo_mes <= 0 else '+' }} R$ {{dash.ultimo_mes}} este mês</p>
-            </button>
-            <button class="cards cotacao">
+                <span>R$ {{dash.guardado|moeda}}</span>
+                <p>{{ '-' if dash.ultimo_mes <= 0 else '+' }} R$ {{dash.ultimo_mes|moeda}} este mês</p>
+            </div>
+            <div class="cards cotacao">
                 <h4 class="card-title">Cotação hoje</h4>
                 <div class="icone-card cotacao-i">
                     <i class="ph ph-currency-dollar"></i>
                 </div>
-                <span> R$ 1 = {{dash.simbolo}} {{cotacao}}</span>
+                <span> R$ 1 = {{dash.simbolo}} {{cotacao|moeda_cotacao}}</span>
                 <p>{{variacao}}%</p>
-            </button>
-            <button class="cards viagem">
+            </div>
+            <div class="cards viagem">
                 <h4 class="card-title">Sua viagem</h4>
                 <div class="icone-card viagem-i">
                     <i class="ph ph-calendar"></i>
                 </div>
                 <span>{{dash.dias}} dias</span>
                 <p>{{dash.ida.strftime('%d/%m/%Y')}} - {{dash.volta.strftime('%d/%m/%Y')}}</p>
-            </button>
+            </div>
         </section>
 
         <section id="dash-container">
-            <div class="card deposito-card">
-                <h3>Resumo dos depósitos</h3>
-                <div class="grafico">
-                    <canvas id="depositosChart"></canvas>
+            <div class="card notas">
+                <h3>Minhas anotações</h3>
+                <div class="notas-container">
+                    {% for nota in dash.notas %}
+                    <div class="nota">
+                        <p>{{nota[0]}}</p>
+                    </div>
+                    {% endfor %}
                 </div>
             </div>
             <section class="dash quick">
                 <h3>Ações rápidas</h3>
                 <div class="actions">
-                    <button class="quick-btn">
+
+                    <dialog id="add_money">
+                        <button class="close" command="close" commandfor="add_money"><i class="fa fa-close"></i></button>
+                        <h2>Nova movimentação</h2>
+                        <form action="/api/movimentacao" method="POST">
+                            <input type="hidden" name="id_viagem" value="{{ id_viagem }}">
+
+                            <label for="tipo">Tipo</label>
+                            <select name="tipo" id="tipo" required>
+                                <option value="deposito">Depósito</option>
+                                <option value="retirada">Retirada</option>
+                            </select>
+
+                            <label for="valor">Valor</label>
+                            <input
+                                type="number"
+                                name="valor"
+                                id="valor"
+                                step="0.01"
+                                min="0.01"
+                                placeholder="0,00"
+                                required
+                            >
+                            <button type="submit">
+                                Adicionar
+                            </button>
+                        </form>
+                    </dialog>
+
+                    
+                    <button class="quick-btn" command="show-modal" commandfor="add_money">
                         <i class="ph ph-plus"></i>
                         <div class="button-desc">
-                            <h3>Adicionar dinheiro</h3>
-                            <p>Guardar dinheiro na poupança</p>
+                            <h3>Nova movimentação</h3>
+                            <p>Registre seus depósitos e retiradas</p>
                         </div>
                     </button>
                     <button class="quick-btn">
@@ -158,7 +192,7 @@
                 </div>
                 <div class="quick-notes">
                     <article><i class="ph ph-note-pencil"></i><h3>Anotação rápida</h3></article>
-                    <textarea name="quick-note" id="quick-note" cols="30" rows="10" placeholder="Escreva aqui..."></textarea>
+                    <textarea name="texto" id="new-note" cols="30" rows="10" placeholder="Escreva aqui..." maxlength="150"></textarea>
                 </div>
             </section>
         </section>

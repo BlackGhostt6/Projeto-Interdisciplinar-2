@@ -8,12 +8,16 @@ create table paises (
     pais varchar(50) not null,
     moeda varchar(20) not null,
     cod_moeda varchar(10) not null unique,
-    cust_med decimal(10,2)
+    simbolo varchar(5),
+    cust_med decimal(10,2),
+    imagem varchar(300),
+    sigla varchar(2)
 );
 
 drop table if exists usuarios;
 create table usuarios(
 	id_user int primary key auto_increment,
+    nome varchar(100),
     email varchar(50) not null unique,
     senha varchar(255) not null
 );
@@ -22,13 +26,16 @@ drop table if exists viagem;
 create table viagem(
 	id_viagem int primary key auto_increment,
     id_user int not null,
-    id_pais int not null,
+    id_origem int not null,
+    id_destino int not null,
     titulo varchar(20),
     data_viagem date,
+    data_volta date,
     meta decimal(10,2),
     
     foreign key(id_user) references usuarios(id_user),
-    foreign key(id_pais) references paises(id_pais)
+    foreign key(id_origem) references paises(id_pais),
+    foreign key(id_destino) references paises(id_pais)
 );
 
 drop table if exists movimentacoes;
@@ -37,7 +44,7 @@ create table movimentacoes(
     id_viagem int not null,
     valor decimal(10,2),
     tipo enum("deposito","retirada"),
-    data_move date,
+    data_move date default(current_date()),
     
     foreign key(id_viagem) references viagem(id_viagem)
 );
@@ -54,35 +61,35 @@ create table anotacoes(
 USE viagem_app;
 
 -- 5 países
-INSERT INTO paises (pais, moeda, cod_moeda, cust_med) VALUES
-('Brasil','Real', 'BRL', 000.00),
-('Japao', 'Iene', 'JPY', 850.00),
-('Estados Unidos', 'Dolar', 'USD', 25.00),
-('Franca', 'Euro', 'EUR', 18.50),
-('Coreia do Sul', 'Won', 'KRW', 32000.00);
+INSERT INTO paises (pais, moeda, cod_moeda, cust_med, simbolo, imagem, sigla) VALUES
+('Brasil','Real', 'BRL', 000.00, "R$", null, "br"),
+('Japão', 'Iene', 'JPY', 670.00, "¥" , "https://sitecontent.kumon.com.br/site/general/638814864529335322_cultura-japonesa.jpg?width=100", "jp"),
+('Estados Unidos', 'Dolar', 'USD', 810.00, "$", "https://images.unsplash.com/photo-1485871981521-5b1fd3805eee", "us"),
+('França', 'Euro', 'EUR', 700.00, "€" , "https://images.unsplash.com/photo-1502602898657-3e91760cbb34", "fr"),
+('Coreia do Sul', 'Won', 'KRW', 560.00, "₩" , "https://omundodiplomatico.com.br/wp-content/uploads/2025/03/seoul-south-korea.webp","kr");
 
 
 -- 1 usuário
-INSERT INTO usuarios (email, senha) VALUES
-('gabriel@email.com', '123456');
+INSERT INTO usuarios (nome, email, senha) VALUES
+("Gabriel", 'gabriel@email.com', '123456');
 
 
 -- 5 viagens, uma para cada país
-INSERT INTO viagem (id_user, id_pais, titulo, data_viagem, meta) VALUES
-(1, 1, 'Viagem Brasil', '2026-12-15', 3000.00),
-(1, 2, 'Viagem Japao', '2028-01-20', 15000.00),
-(1, 3, 'Viagem EUA', '2027-07-10', 12000.00),
-(1, 4, 'Viagem Franca', '2027-09-05', 10000.00),
-(1, 5, 'Viagem Coreia', '2028-03-15', 13000.00);
+INSERT INTO viagem (id_user, id_origem, id_destino, titulo, data_viagem, data_volta, meta) VALUES
+(1, 1, 2, 'Viagem Japao', '2026-12-15','2027-01-15', 12000.00),
+(1, 1, 3, 'Viagem EUA', '2027-07-10','2027-12-15', 12000.00),
+(1, 1, 4, 'Viagem Franca', '2027-09-05','2027-09-20', 10000.00),
+(1, 1, 5, 'Viagem Coreia', '2028-03-15', '2028-04-15',13000.00);
 
 
 -- 1 movimentação para cada viagem
-INSERT INTO movimentacoes (id_viagem, valor, tipo, data_move) VALUES
-(1, 500.00, 'deposito', '2026-08-11'),
-(2, 200.00, 'deposito', '2026-08-11'),
-(3, 300.00, 'deposito', '2026-08-11'),
-(4, 150.00, 'deposito', '2026-08-11'),
-(5, 250.00, 'deposito', '2026-08-11');
+INSERT INTO movimentacoes (id_viagem, valor, tipo) VALUES
+(1, 500.00, 'deposito'),
+(1, 1000.00, 'deposito'),
+(1, 700.00, 'deposito'),
+(2, 200.00, 'deposito'),
+(3, 300.00, 'deposito'),
+(4, 150.00, 'deposito');
 
 
 -- 1 anotação para cada viagem
@@ -90,5 +97,4 @@ INSERT INTO anotacoes (id_viagem, anotacao) VALUES
 (1, 'Conhecer cidades historicas e praias do Brasil.'),
 (2, 'Visitar Tokyo, Kyoto e assistir a um show.'),
 (3, 'Conhecer Nova York e visitar os principais pontos turisticos.'),
-(4, 'Visitar Paris, museus e pontos historicos.'),
-(5, 'Conhecer Seoul e experimentar a culinaria local.');
+(4, 'Visitar Paris, museus e pontos historicos.');
