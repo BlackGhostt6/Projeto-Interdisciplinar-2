@@ -18,7 +18,7 @@ def get_db_connection():
 
 def connection():
     conn = get_db_connection()
-    cursor = conn.cursor()
+    cursor = conn.cursor(buffered=True)
     return conn, cursor
 
 def close(cursor, conn):

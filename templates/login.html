@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="shortcut icon" href="{{ url_for('static', filename='img/fav.png') }}" type="image/x-png">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@phosphor-icons/web@2.1.2/src/regular/style.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/lipis/flag-icons@7.3.2/css/flag-icons.min.css"/>
+    <script src="https://kit.fontawesome.com/a3a9f84800.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <title>Login</title>
+</head>
+<body>
+    <section id="login">
+        <h1>Login</h1>
+        {% if erro %}
+            <p style="color: var(--danger); margin: 0 0 1rem; font-size: 0.85rem;">{{ erro }}</p>
+        {% endif %}
+        <form method="POST" action="{{ url_for('routes.login') }}">
+            <label for="usuario">Usuário / e-mail:</label>
+            <input type="text" id="usuario" name="usuario" placeholder="Digite seu e-mail ou nome" required>
+            <label for="senha">Senha:</label>
+            <input type="password" id="senha" name="senha" placeholder="Digite sua senha" required>
+            <br>
+            <p>Não possui uma conta? <a href="{{ url_for('routes.cadastro') }}">Clique aqui.</a></p>
+            <div id="botoes">
+                <button class="btn" id="login-btn" type="submit">Login</button>
+                <button class="btn" id="login-theme-btn" type="button"><i id="theme-icon" class="fas fa-moon"></i></button>
+            </div>
+        </form>
+    </section>
+<script src="{{ url_for('static', filename='script.js') }}"></script>
+</body>
+</html>

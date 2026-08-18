@@ -8,73 +8,88 @@ CACHE = "utils/currency_cache.json"
 def get_cotacao(origem, destino):
     chave = f"{origem}_{destino}"
 
-    if os.path.exists(CACHE):
-        with open(CACHE, "r") as arquivo:
-            cache = json.load(arquivo)
+    # Tenta carregar o cache
+    cache = {}
 
-        if chave in cache:
+    try:
+        if os.path.exists(CACHE):
+            with open(CACHE, "r") as arquivo:
+                cache = json.load(arquivo)
+    except (json.JSONDecodeError, OSError):
+        cache = {}
+
+    # Usa o cache se ainda estiver válido
+    if chave in cache:
+        try:
             data = datetime.fromisoformat(cache[chave]["atualizado"])
 
             if datetime.now() - data < timedelta(hours=6):
                 return cache[chave]["valor"]
+        except (KeyError, ValueError):
+            pass
 
+    # Tenta buscar uma cotação nova
     try:
         url = f"https://api.frankfurter.dev/v2/rate/{origem}/{destino}"
+
         resposta = requests.get(url, timeout=5)
         resposta.raise_for_status()
 
         valor = resposta.json()["rate"]
 
-        cache = {}
-
-        if os.path.exists(CACHE):
-            with open(CACHE, "r") as arquivo:
-                cache = json.load(arquivo)
-
+        # Atualiza o cache
         cache[chave] = {
             "valor": valor,
             "atualizado": datetime.now().isoformat()
         }
 
-        with open(CACHE, "w") as arquivo:
-            json.dump(cache, arquivo)
+        try:
+            with open(CACHE, "w") as arquivo:
+                json.dump(cache, arquivo)
+        except OSError:
+            pass
 
         return valor
 
+    # Se der timeout ou qualquer erro de conexão,
+    # usa o cache antigo
     except requests.RequestException:
-        if os.path.exists(CACHE):
-            with open(CACHE, "r") as arquivo:
-                cache = json.load(arquivo)
-
-            if chave in cache:
-                return cache[chave]["valor"]
+        if chave in cache:
+            return cache[chave]["valor"]
 
         return None
-
 
 def get_variacao_cotacao(origem, destino):
     hoje = date.today()
     ontem = hoje - timedelta(days=1)
 
-    url_hoje = f"https://api.frankfurter.dev/v2/rate/{origem}/{destino}"
-    url_ontem = f"https://api.frankfurter.dev/v2/rate/{origem}/{destino}?date={ontem}"
+    try:
+        url_hoje = f"https://api.frankfurter.dev/v2/rate/{origem}/{destino}"
+        url_ontem = f"https://api.frankfurter.dev/v2/rate/{origem}/{destino}?date={ontem}"
 
-    resposta_hoje = requests.get(url_hoje, timeout=10)
-    resposta_ontem = requests.get(url_ontem, timeout=10)
+        resposta_hoje = requests.get(url_hoje, timeout=5)
+        resposta_ontem = requests.get(url_ontem, timeout=5)
 
-    if resposta_hoje.status_code != 200 or resposta_ontem.status_code != 200:
+        resposta_hoje.raise_for_status()
+        resposta_ontem.raise_for_status()
+
+        cotacao_hoje = resposta_hoje.json()["rate"]
+        cotacao_ontem = resposta_ontem.json()["rate"]
+
+        variacao = ((cotacao_hoje - cotacao_ontem) / cotacao_ontem) * 100
+
+        return round(variacao, 4)
+
+    except requests.RequestException:
         return None
-
-    cotacao_hoje = resposta_hoje.json()["rate"]
-    cotacao_ontem = resposta_ontem.json()["rate"]
-
-    variacao = round(((cotacao_hoje - cotacao_ontem) / cotacao_ontem) * 100, 4)
-    return variacao
-
+    
 def moeda(valor):
     return f"{valor:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
 
 def moeda_cotacao(valor):
+    if valor is None:   
+        return "--"
+
     if valor <1:
         return f"{valor:,.4f}".replace(",", "X").replace(".", ",").replace("X", ".")
     else:

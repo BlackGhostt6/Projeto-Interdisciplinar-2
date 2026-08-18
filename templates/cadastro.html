@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="shortcut icon" href="{{ url_for('static', filename='img/fav.png') }}" type="image/x-png">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@phosphor-icons/web@2.1.2/src/regular/style.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/lipis/flag-icons@7.3.2/css/flag-icons.min.css"/>
+    <script src="https://kit.fontawesome.com/a3a9f84800.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <title>Login</title>
+</head>
+<body>
+    <section id="cadastro">
+        <h1>Cadastro</h1>
+        {% if erro %}
+            <p class="erro-msg">{{ erro }}</p>
+        {% endif %}
+        <form method="POST" action="/cadastrar-user">
+            <label for="nome">Usuário:</label>
+            <input type="text" id="nome" name="nome" placeholder="Digite seu nome de usuario" required>
+            <label for="email">E-mail:</label>
+            <input type="email" id="email" name="email" placeholder="Digite seu email" required>
+            <label for="senha">Crie sua senha:</label>
+            <input type="password" id="senha" name="senha" placeholder="Digite sua senha" required>
+
+            <label class="lgpd-box" for="aceita_termos">
+                <input type="checkbox" id="aceita_termos" name="aceita_termos" required>
+                <span>Concordo com o tratamento dos meus dados e com a política de privacidade/LGPD.</span>
+            </label>
+
+            <div id="botoes">
+                <button class="btn" id="login-btn" type="submit">Criar conta</button>
+                <button class="btn" id="login-theme-btn" type="button"><i id="theme-icon" class="fas fa-moon"></i></button>
+            </div>
+        </form>
+    </section>
+<script src="{{ url_for('static', filename='script.js') }}"></script>
+</body>
+</html>

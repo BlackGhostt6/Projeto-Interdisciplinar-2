@@ -22,12 +22,16 @@
             </summary>
 
             <div class="user-options">
-                <a href="#">
-                    <i class="ph ph-user"></i>
-                    <span>Meu perfil</span>
-                </a>
+                <button type="button" class="menu-action" command="show-modal" commandfor="trips-modal">
+                    <i class="ph ph-airplane"></i>
+                    <span>Viagens</span>
+                </button>
+                <button type="button" class="menu-action" command="show-modal" commandfor="new-trip-modal">
+                    <i class="ph ph-plus-circle"></i>
+                    <span>Criar viagem</span>
+                </button>
                 <hr>
-                <a href="#" class="logout">
+                <a href="/logout" class="logout">
                     <i class="ph ph-sign-out"></i>
                     <span>Sair</span>
                 </a>
@@ -37,18 +41,19 @@
     
     <main>
         <button id="theme-toggle-btn"><i class="ph ph-moon"></i> Mudar tema</button>
-        <form action="/" id="id-viagem" method="GET">
-            <select name="viagem" onchange="this.form.submit()">
-                <option value="1" {% if id_viagem == 1 %}selected{% endif %}>Japão</option>
-                <option value="2" {% if id_viagem == 2 %}selected{% endif %}>EUA</option>
-                <option value="3" {% if id_viagem == 3 %}selected{% endif %}>França</option>
-                <option value="4" {% if id_viagem == 4 %}selected{% endif %}>Coreia do Sul</option>
-            </select>
-        </form>
+
         <article id="title">
             <h2>Olá, {{dash.nome}} 👋</h2>
             <p>Planeje sua próxima viagem</p>
         </article>
+
+        {% if no_trip %}
+        <section class="empty-state">
+            <h3>Você ainda não tem nenhuma viagem cadastrada.</h3>
+            <p>Crie sua primeira viagem para começar a guardar dinheiro e organizar o planejamento.</p>
+            <button class="btn primary-btn" type="button" command="show-modal" commandfor="new-trip-modal">Criar nova viagem</button>
+        </section>
+        {% else %}
         <section id="resume-container">
             <div class="card meta">
                 <div class="meta-img">
@@ -105,7 +110,7 @@
                     <i class="ph ph-currency-dollar"></i>
                 </div>
                 <span> R$ 1 = {{dash.simbolo}} {{cotacao|moeda_cotacao}}</span>
-                <p>{{variacao}}%</p>
+                <p>{{variacao}} {{'%' if variacao != None and variacao != 0 else '' }}</p>
             </div>
             <div class="cards viagem">
                 <h4 class="card-title">Sua viagem</h4>
@@ -119,10 +124,11 @@
 
         <section id="dash-container">
             <div class="card notas">
-                <h3>Minhas anotações</h3>
+                <h3>Últimas anotações</h3>
                 <div class="notas-container">
-                    {% for nota in dash.notas %}
+                    {% for nota in dash.notas[:5] %}
                     <div class="nota">
+                        <i class="ph ph-push-pin pin"></i>
                         <p>{{nota[0]}}</p>
                     </div>
                     {% endfor %}
@@ -132,7 +138,7 @@
                 <h3>Ações rápidas</h3>
                 <div class="actions">
 
-                    <dialog id="add_money">
+                    <dialog id="add_money" class="modal">
                         <button class="close" command="close" commandfor="add_money"><i class="fa fa-close"></i></button>
                         <h2>Nova movimentação</h2>
                         <form action="/api/movimentacao" method="POST">
@@ -160,6 +166,24 @@
                         </form>
                     </dialog>
 
+                    <dialog id="quick-note" class="modal notes-modal">
+                        <button class="close" command="close" commandfor="quick-note"><i class="fa fa-close"></i></button>
+                        <h2>Minhas anotações</h2>
+                        <div class="notas-container" id="n-modal">          
+                            {% if dash.notas|length == 0 %}
+                                <div class="nota nota-modal">
+                                    <p>Você não possui notas para esta viagem.</p>
+                                </div>
+                            {% else %}
+                                {% for nota in dash.notas %}
+                                    <div class="nota nota-modal">
+                                        <p>{{ nota[0] }}</p>
+                                    </div>
+                                {% endfor %}
+                            {% endif %}
+                        </div>
+                    </dialog>
+
                     
                     <button class="quick-btn" command="show-modal" commandfor="add_money">
                         <i class="ph ph-plus"></i>
@@ -168,7 +192,7 @@
                             <p>Registre seus depósitos e retiradas</p>
                         </div>
                     </button>
-                    <button class="quick-btn">
+                    <button class="quick-btn" command="show-modal" commandfor="quick-note">
                         <i class="ph ph-note"></i>
                         <div class="button-desc">
                             <h3>Minhas anotações</h3>
@@ -182,29 +206,89 @@
                             <p>Visualizar todas as transações</p>
                         </div>
                     </button>
-                    <button class="quick-btn">
+                    <button class="quick-btn" type="button" command="show-modal" commandfor="trips-modal">
                         <i class="ph ph-airplane"></i>
                         <div class="button-desc">
                             <h3>Minhas viagens</h3>
-                            <p>Ver, editar ou modificar suas viagens</p>
+                            <p>Ver, editar ou apagar suas viagens</p>
                         </div>
                     </button>
                 </div>
-                <div class="quick-notes">
-                    <article><i class="ph ph-note-pencil"></i><h3>Anotação rápida</h3></article>
+                <div id="notes-txt">
+                    <h3><span><i class="ph ph-note-pencil"></i></span> Nova anotação</h3>
                     <textarea name="texto" id="new-note" cols="30" rows="10" placeholder="Escreva aqui..." maxlength="150"></textarea>
                 </div>
             </section>
         </section>
+        {% endif %}
     </main>
+
+    <dialog id="trips-modal" class="modal">
+        <button class="close" command="close" commandfor="trips-modal" type="button"><i class="fa fa-close"></i></button>
+        <h2>Minhas viagens</h2>
+        <div class="trip-list">
+            {% if dash.viagens %}
+                {% for viagem in dash.viagens %}
+                    <a href="/?viagem={{ viagem[0] }}" class="trip-item {% if id_viagem == viagem[0] %}active{% endif %}">
+                        <span class="trip-item-name">{{ viagem[1] }}</span>
+                        <i class="ph ph-arrow-right"></i>
+                    </a>
+                {% endfor %}
+            {% else %}
+                <p class="empty-trip-message">Você ainda não tem viagens cadastradas.</p>
+            {% endif %}
+        </div>
+        <div class="trip-modal-actions">
+            <button type="button" class="secondary-btn" command="show-modal" commandfor="new-trip-modal">Nova viagem</button>
+        </div>
+    </dialog>
+
+    <dialog id="new-trip-modal" class="modal">
+        <button class="close" command="close" commandfor="new-trip-modal" type="button"><i class="fa fa-close"></i></button>
+        <h2>Nova viagem</h2>
+        <form action="/api/viagem" method="POST">
+            <label for="titulo">Título</label>
+            <input type="text" id="titulo" name="titulo" placeholder="Ex: Japão 2027" required>
+
+            <label for="destino">Destino</label>
+            <select id="destino" name="destino" required>
+                {% for pais in paises %}
+                    <option value="{{ pais[0] }}">{{ pais[1] }}</option>
+                {% endfor %}
+            </select>
+
+            <label for="data_viagem">Data de ida</label>
+            <input type="date" id="data_viagem" name="data_viagem" required>
+
+            <label for="data_volta">Data de volta</label>
+            <input type="date" id="data_volta" name="data_volta" required>
+
+            <br>
+
+            <button type="submit">Salvar viagem</button>
+        </form>
+    </dialog>
+
     <footer>
         <a href="https://github.com/BlackGhostt6/Projeto-Interdisciplinar-2"><i class="fa fa-github"></i> GitHub</a>
     </footer>
     <script src="{{ url_for('static', filename='script.js') }}"></script>
+    {% if not no_trip %}
     <style>
     .meta-img {
         background-image: url("{{ dash.imagem }}");
     }
-</style>
+    </style>
+    {% endif %}
+    {% if no_trip %}
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const modal = document.getElementById('new-trip-modal');
+            if (modal && !modal.hasAttribute('open')) {
+                modal.showModal();
+            }
+        });
+    </script>
+    {% endif %}
 </body>
 </html>

@@ -31,7 +31,6 @@ create table viagem(
     titulo varchar(20),
     data_viagem date,
     data_volta date,
-    meta decimal(10,2),
     
     foreign key(id_user) references usuarios(id_user),
     foreign key(id_origem) references paises(id_pais),
@@ -68,18 +67,17 @@ INSERT INTO paises (pais, moeda, cod_moeda, cust_med, simbolo, imagem, sigla) VA
 ('França', 'Euro', 'EUR', 700.00, "€" , "https://images.unsplash.com/photo-1502602898657-3e91760cbb34", "fr"),
 ('Coreia do Sul', 'Won', 'KRW', 560.00, "₩" , "https://omundodiplomatico.com.br/wp-content/uploads/2025/03/seoul-south-korea.webp","kr");
 
-
 -- 1 usuário
 INSERT INTO usuarios (nome, email, senha) VALUES
 ("Gabriel", 'gabriel@email.com', '123456');
 
 
 -- 5 viagens, uma para cada país
-INSERT INTO viagem (id_user, id_origem, id_destino, titulo, data_viagem, data_volta, meta) VALUES
-(1, 1, 2, 'Viagem Japao', '2026-12-15','2027-01-15', 12000.00),
-(1, 1, 3, 'Viagem EUA', '2027-07-10','2027-12-15', 12000.00),
-(1, 1, 4, 'Viagem Franca', '2027-09-05','2027-09-20', 10000.00),
-(1, 1, 5, 'Viagem Coreia', '2028-03-15', '2028-04-15',13000.00);
+INSERT INTO viagem (id_user, id_origem, id_destino, titulo, data_viagem, data_volta) VALUES
+(1, 1, 2, 'Viagem Japao', '2026-12-15','2027-01-15'),
+(1, 1, 3, 'Viagem EUA', '2027-07-10','2027-07-20'),
+(1, 1, 4, 'Viagem Franca', '2027-09-05','2027-09-20'),
+(1, 1, 5, 'Viagem Coreia', '2028-03-15', '2028-04-15);
 
 
 -- 1 movimentação para cada viagem
@@ -94,7 +92,8 @@ INSERT INTO movimentacoes (id_viagem, valor, tipo) VALUES
 
 -- 1 anotação para cada viagem
 INSERT INTO anotacoes (id_viagem, anotacao) VALUES
-(1, 'Conhecer cidades historicas e praias do Brasil.'),
-(2, 'Visitar Tokyo, Kyoto e assistir a um show.'),
-(3, 'Conhecer Nova York e visitar os principais pontos turisticos.'),
-(4, 'Visitar Paris, museus e pontos historicos.');
+(1, 'Ir em um show da ado.'),
+(1, 'Fazer um curso de japônes básico.'),
+(1, 'Visitar Tokyo, Kyoto e assistir a um show.'),
+(2, 'Conhecer Nova York e visitar os principais pontos turisticos.'),
+(3, 'Visitar Paris, museus e pontos historicos.');
