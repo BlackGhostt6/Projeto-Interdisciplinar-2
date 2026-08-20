@@ -22,7 +22,8 @@ def require_login():
 
 def getPaises():
     conn, cursor = connection()
-    cursor.execute("SELECT id_pais, pais FROM paises ORDER BY pais")
+    excluded = "brasil"
+    cursor.execute("SELECT id_pais, pais FROM paises where not pais = %s ORDER BY pais",(excluded,))
     paises = cursor.fetchall()
     close(conn, cursor)
     return paises
@@ -31,11 +32,13 @@ def getDash(id):
     conn, cursor = connection()
     user = session["usuario_id"]
 
-    cursor.execute("""SELECT v.id_viagem, p.pais, v.id_destino
-    FROM viagem as v
-    inner join paises as p
-    on v.id_destino = p.id_pais
-    WHERE id_user = %s;""",(user,))
+    cursor.execute("""
+    SELECT v.id_viagem, p.pais, v.titulo, v.data_viagem, v.data_volta, v.id_destino
+    FROM viagem AS v
+    INNER JOIN paises AS p ON v.id_destino = p.id_pais
+    WHERE v.id_user = %s
+    ORDER BY v.id_viagem ASC;
+    """, (user,))
     viagens =cursor.fetchall()
     
     cursor.execute("""SELECT DATEDIFF(data_viagem, CURDATE()) AS dias_restantes
@@ -43,7 +46,7 @@ def getDash(id):
     WHERE id_viagem = %s;""",(id,))
     dias_restantes =cursor.fetchone()[0]
 
-    cursor.execute("select anotacao as nota from anotacoes where id_viagem = %s  ORDER BY id_nota DESC;", (id,))
+    cursor.execute("select id_nota, anotacao from anotacoes where id_viagem = %s ORDER BY id_nota DESC;", (id,))
     notas = cursor.fetchall()  
 
     cursor.execute("select v.id_destino, p.pais from viagem as v inner join paises as p on v.id_destino = p.id_pais  where id_viagem = %s ", (id,))
@@ -136,16 +139,23 @@ def index():
         return redirect(url_for("routes.login"))
 
     conn, cursor = connection()
-    cursor.execute("SELECT v.id_viagem, p.pais FROM viagem v INNER JOIN paises p ON v.id_destino = p.id_pais WHERE v.id_user = %s ORDER BY v.id_viagem ASC", (session["usuario_id"],))
+    cursor.execute("""
+        SELECT v.id_viagem, p.pais, v.titulo, v.data_viagem, v.data_volta, v.id_destino
+        FROM viagem v
+        INNER JOIN paises p ON v.id_destino = p.id_pais
+        WHERE v.id_user = %s
+        ORDER BY v.id_viagem ASC
+    """, (session["usuario_id"],))
     viagens = cursor.fetchall()
-    cursor.execute("SELECT nome FROM usuarios WHERE id_user = %s", (session["usuario_id"],))
-    nome_usuario = cursor.fetchone()
+    cursor.execute("SELECT id_user, nome, email FROM usuarios WHERE id_user = %s", (session["usuario_id"],))
+    perfil = cursor.fetchone()
     close(conn, cursor)
 
     if not viagens:
         return render_template(
             'index.html',
-            dash={"nome": nome_usuario[0] if nome_usuario else "Usuário", "viagens": []},
+            dash={"nome": perfil[1] if perfil else "Usuário", "viagens": []},
+            perfil=perfil,
             paises=getPaises(),
             has_viagens=False,
             no_trip=True,
@@ -167,7 +177,7 @@ def index():
     else:
         target = "Sua meta foi alcançada!"
 
-    return render_template('index.html', dash=dash, cotacao=cotacao, variacao=variacao, target=target, meta=meta, id_viagem=id_viagem, percent=percent, paises=getPaises(), has_viagens=True, no_trip=False)
+    return render_template('index.html', dash=dash, perfil=perfil, cotacao=cotacao, variacao=variacao, target=target, meta=meta, id_viagem=id_viagem, percent=percent, paises=getPaises(), has_viagens=True, no_trip=False)
 
 @routes.route("/login", methods=['GET', 'POST'])
 def login():
@@ -219,6 +229,7 @@ def logout():
 
 @routes.route("/cadastro")
 def cadastro():
+
     return render_template('cadastro.html')
 
 
@@ -398,16 +409,15 @@ def criar_viagem():
     destino = dados.get('destino')
     data_viagem = dados.get('data_viagem')
     data_volta = dados.get('data_volta')
-    meta = dados.get('meta') or 0
 
     if not titulo or not destino or not data_viagem or not data_volta:
         return redirect(url_for("routes.index"))
 
     conn, cursor = connection()
     cursor.execute("""
-        INSERT INTO viagem (id_user, id_origem, id_destino, titulo, data_viagem, data_volta, meta)
-        VALUES (%s, 1, %s, %s, %s, %s, %s)
-    """, (session['usuario_id'], destino, titulo, data_viagem, data_volta, meta))
+        INSERT INTO viagem (id_user, id_origem, id_destino, titulo, data_viagem, data_volta)
+        VALUES (%s, 1, %s, %s, %s, %s)
+    """, (session['usuario_id'], destino, titulo, data_viagem, data_volta))
     conn.commit()
     nova_viagem_id = cursor.lastrowid
     close(conn, cursor)
@@ -428,6 +438,9 @@ def cadastrar():
     if not aceita_termos:
         return render_template('cadastro.html', erro='Você precisa aceitar os termos de uso e LGPD para continuar.')
 
+    if aceita_termos:
+        aceita = True
+
     conn, cursor = connection()
     cursor.execute("SELECT id_user FROM usuarios WHERE email = %s OR nome = %s LIMIT 1", (email, nome))
     usuario_existente = cursor.fetchone()
@@ -438,17 +451,149 @@ def cadastrar():
 
     senha_hash = generate_password_hash(senha)
     cursor.execute("""
-        INSERT INTO usuarios (nome, email, senha) VALUES (%s, %s, %s)
-""", (nome, email, senha_hash,))
+        INSERT INTO usuarios (nome, email, senha, aceitou_lgpd) VALUES (%s, %s, %s, %s)
+""", (nome, email, senha_hash, aceita))
+    
+    cursor.execute("SELECT id_user, senha FROM usuarios WHERE nome = %s LIMIT 1", (nome,))
+    novo_user = cursor.fetchone() 
 
     conn.commit()
-    close(conn, cursor)
+    close(conn, cursor)  
 
-    return redirect(url_for("routes.login"))
+    session['usuario_id'] = novo_user[0]
+    session['usuario_nome'] = novo_user[1]
+    return redirect(url_for('routes.index'))
 
 # ====================== ROTAS DE PUT ======================
 
+def json_error(message, status=400):
+    return jsonify({"sucesso": False, "erro": message}), status
+
+
+@routes.route("/api/viagem/<int:id_viagem>", methods=["PUT"])
+def editar_viagem(id_viagem):
+    dados = request.get_json(silent=True) or {}
+    destino = dados.get("destino")
+    data_viagem = dados.get("data_viagem")
+    data_volta = dados.get("data_volta")
+
+    if not destino or not data_viagem or not data_volta or data_volta < data_viagem:
+        return json_error("Destino e datas válidos são obrigatórios.")
+
+    conn, cursor = connection()
+    cursor.execute("""
+        UPDATE viagem
+        SET id_destino = %s, data_viagem = %s, data_volta = %s
+        WHERE id_viagem = %s AND id_user = %s
+    """, (destino, data_viagem, data_volta, id_viagem, session["usuario_id"]))
+    atualizado = cursor.rowcount
+    conn.commit()
+    close(conn, cursor)
+
+    if not atualizado:
+        return json_error("Viagem não encontrada.", 404)
+    return jsonify({"sucesso": True})
+
+
+@routes.route("/api/anotacao/<int:id_nota>", methods=["PUT"])
+def editar_anotacao(id_nota):
+    dados = request.get_json(silent=True) or {}
+    texto = (dados.get("anotacao") or "").strip()
+    if not texto:
+        return json_error("A anotação não pode ficar vazia.")
+
+    conn, cursor = connection()
+    cursor.execute("""
+        UPDATE anotacoes a
+        INNER JOIN viagem v ON v.id_viagem = a.id_viagem
+        SET a.anotacao = %s
+        WHERE a.id_nota = %s AND v.id_user = %s
+    """, (texto, id_nota, session["usuario_id"]))
+    atualizado = cursor.rowcount
+    conn.commit()
+    close(conn, cursor)
+
+    if not atualizado:
+        return json_error("Anotação não encontrada.", 404)
+    return jsonify({"sucesso": True})
+
+
+@routes.route("/api/usuario/<int:id_user>", methods=["PUT"])
+def editar_usuario(id_user):
+    if id_user != session["usuario_id"]:
+        return json_error("Acesso não autorizado.", 403)
+
+    dados = request.get_json(silent=True) or {}
+    nome = (dados.get("nome") or "").strip()
+    email = (dados.get("email") or "").strip()
+    senha = dados.get("senha") or ""
+    if not nome or not email:
+        return json_error("Nome e e-mail são obrigatórios.")
+
+    conn, cursor = connection()
+    cursor.execute("SELECT id_user FROM usuarios WHERE (email = %s OR nome = %s) AND id_user <> %s LIMIT 1", (email, nome, id_user))
+    if cursor.fetchone():
+        close(conn, cursor)
+        return json_error("Nome ou e-mail já cadastrado.", 409)
+
+    if senha:
+        cursor.execute("UPDATE usuarios SET nome = %s, email = %s, senha = %s WHERE id_user = %s", (nome, email, generate_password_hash(senha), id_user))
+    else:
+        cursor.execute("UPDATE usuarios SET nome = %s, email = %s WHERE id_user = %s", (nome, email, id_user))
+    conn.commit()
+    close(conn, cursor)
+    session["usuario_nome"] = nome
+    return jsonify({"sucesso": True})
 
 
 # ====================== ROTAS DE DELETE ======================
+
+@routes.route("/api/anotacao/<int:id_nota>", methods=["DELETE"])
+def deletar_anotacao(id_nota):
+    conn, cursor = connection()
+    cursor.execute("""
+        DELETE a FROM anotacoes a
+        INNER JOIN viagem v ON v.id_viagem = a.id_viagem
+        WHERE a.id_nota = %s AND v.id_user = %s
+    """, (id_nota, session["usuario_id"]))
+    deletado = cursor.rowcount
+    conn.commit()
+    close(conn, cursor)
+    if not deletado:
+        return json_error("Anotação não encontrada.", 404)
+    return jsonify({"sucesso": True})
+
+
+@routes.route("/api/viagem/<int:id_viagem>", methods=["DELETE"])
+def deletar_viagem(id_viagem):
+    conn, cursor = connection()
+    cursor.execute("SELECT id_viagem FROM viagem WHERE id_viagem = %s AND id_user = %s", (id_viagem, session["usuario_id"]))
+    if not cursor.fetchone():
+        close(conn, cursor)
+        return json_error("Viagem não encontrada.", 404)
+    cursor.execute("DELETE FROM anotacoes WHERE id_viagem = %s", (id_viagem,))
+    cursor.execute("DELETE FROM movimentacoes WHERE id_viagem = %s", (id_viagem,))
+    cursor.execute("DELETE FROM viagem WHERE id_viagem = %s AND id_user = %s", (id_viagem, session["usuario_id"]))
+    conn.commit()
+    close(conn, cursor)
+    return jsonify({"sucesso": True})
+
+
+@routes.route("/api/usuario/<int:id_user>", methods=["DELETE"])
+def deletar_usuario(id_user):
+    if id_user != session["usuario_id"]:
+        return json_error("Acesso não autorizado.", 403)
+
+    conn, cursor = connection()
+    cursor.execute("SELECT id_viagem FROM viagem WHERE id_user = %s", (id_user,))
+    viagens = [viagem[0] for viagem in cursor.fetchall()]
+    for id_viagem in viagens:
+        cursor.execute("DELETE FROM anotacoes WHERE id_viagem = %s", (id_viagem,))
+        cursor.execute("DELETE FROM movimentacoes WHERE id_viagem = %s", (id_viagem,))
+    cursor.execute("DELETE FROM viagem WHERE id_user = %s", (id_user,))
+    cursor.execute("DELETE FROM usuarios WHERE id_user = %s", (id_user,))
+    conn.commit()
+    close(conn, cursor)
+    session.clear()
+    return jsonify({"sucesso": True})
 

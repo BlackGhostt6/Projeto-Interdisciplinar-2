@@ -209,6 +209,15 @@ p{
     padding-left: 2%;
 }
 
+#obs{
+    position: absolute;
+    top: 1.5rem;
+    right: 1rem;
+    font-size: small;
+    color: var(--accent-text);
+    font-weight: 600;
+}
+
 .content h3{
     font-weight: 600;
     font-size: xx-large;
@@ -805,6 +814,39 @@ option{
     background: var(--background);
     color: var(--text);
     transition: border-color .2s ease, transform .2s ease;
+}
+
+.trip-link {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: .8rem;
+    flex: 1;
+    min-width: 0;
+}
+
+.item-actions {
+    display: flex;
+    align-items: center;
+    gap: .25rem;
+}
+
+.icon-btn {
+    padding: .35rem;
+    border: 0;
+    border-radius: 7px;
+    background: transparent;
+    color: var(--text-secondary);
+}
+
+.icon-btn:hover {
+    background: rgb(from var(--hover) r g b / 15%);
+    color: var(--text);
+}
+
+.danger-btn {
+    background: var(--danger) !important;
+    color: var(--white) !important;
 }
 
 .trip-item:hover {

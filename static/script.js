@@ -95,3 +95,125 @@ if (textarea) {
         }
     });
 }
+
+async function apiRequest(url, method, body) {
+    const response = await fetch(url, {
+        method,
+        headers: { "Content-Type": "application/json" },
+        body: body ? JSON.stringify(body) : undefined
+    });
+    if (!response.ok) {
+        const data = await response.json().catch(() => ({}));
+        throw new Error(data.erro || "Não foi possível concluir a operação.");
+    }
+    return response;
+}
+
+document.querySelectorAll(".edit-note-btn").forEach((button) => {
+    button.addEventListener("click", () => {
+        const note = button.closest("[data-note-id]");
+        const modal = document.getElementById("edit-note-modal");
+        document.getElementById("edit-note-id").value = note.dataset.noteId;
+        document.getElementById("edit-note-text").value = note.querySelector("p").textContent.trim();
+        modal.showModal();
+    });
+});
+
+document.querySelectorAll(".delete-note-btn").forEach((button) => {
+    button.addEventListener("click", async () => {
+        const note = button.closest("[data-note-id]");
+        if (!confirm("Excluir esta anotação?")) return;
+        try {
+            await apiRequest(`/api/anotacao/${note.dataset.noteId}`, "DELETE");
+            location.reload();
+        } catch (error) {
+            alert(error.message);
+        }
+    });
+});
+
+const editNoteForm = document.getElementById("edit-note-form");
+if (editNoteForm) {
+    editNoteForm.addEventListener("submit", async (event) => {
+        event.preventDefault();
+        try {
+            await apiRequest(`/api/anotacao/${document.getElementById("edit-note-id").value}`, "PUT", {
+                anotacao: document.getElementById("edit-note-text").value.trim()
+            });
+            location.reload();
+        } catch (error) {
+            alert(error.message);
+        }
+    });
+}
+
+document.querySelectorAll(".edit-trip-btn").forEach((button) => {
+    button.addEventListener("click", () => {
+        const trip = button.closest("[data-trip-id]");
+        document.getElementById("edit-trip-id").value = trip.dataset.tripId;
+        document.getElementById("edit-destino").value = trip.dataset.destination;
+        document.getElementById("edit-data-viagem").value = trip.dataset.start;
+        document.getElementById("edit-data-volta").value = trip.dataset.end;
+        document.getElementById("edit-trip-modal").showModal();
+    });
+});
+
+document.querySelectorAll(".delete-trip-btn").forEach((button) => {
+    button.addEventListener("click", async () => {
+        const trip = button.closest("[data-trip-id]");
+        if (!confirm("Excluir esta viagem e todas as suas anotações e movimentações?")) return;
+        try {
+            await apiRequest(`/api/viagem/${trip.dataset.tripId}`, "DELETE");
+            location.href = "/";
+        } catch (error) {
+            alert(error.message);
+        }
+    });
+});
+
+const editTripForm = document.getElementById("edit-trip-form");
+if (editTripForm) {
+    editTripForm.addEventListener("submit", async (event) => {
+        event.preventDefault();
+        try {
+            await apiRequest(`/api/viagem/${document.getElementById("edit-trip-id").value}`, "PUT", {
+                destino: document.getElementById("edit-destino").value,
+                data_viagem: document.getElementById("edit-data-viagem").value,
+                data_volta: document.getElementById("edit-data-volta").value
+            });
+            location.reload();
+        } catch (error) {
+            alert(error.message);
+        }
+    });
+}
+
+const profileForm = document.getElementById("profile-form");
+if (profileForm) {
+    profileForm.addEventListener("submit", async (event) => {
+        event.preventDefault();
+        try {
+            await apiRequest(`/api/usuario/${profileForm.dataset.userId}`, "PUT", {
+                nome: document.getElementById("profile-name").value.trim(),
+                email: document.getElementById("profile-email").value.trim(),
+                senha: document.getElementById("profile-password").value
+            });
+            location.reload();
+        } catch (error) {
+            alert(error.message);
+        }
+    });
+}
+
+const deleteAccountButton = document.getElementById("delete-account-btn");
+if (deleteAccountButton) {
+    deleteAccountButton.addEventListener("click", async () => {
+        if (!confirm("Excluir sua conta, viagens e anotações permanentemente?")) return;
+        try {
+            await apiRequest(`/api/usuario/${deleteAccountButton.dataset.userId}`, "DELETE");
+            location.href = "/login";
+        } catch (error) {
+            alert(error.message);
+        }
+    });
+}

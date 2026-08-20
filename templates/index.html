@@ -9,7 +9,7 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/lipis/flag-icons@7.3.2/css/flag-icons.min.css"/>
     <script src="https://kit.fontawesome.com/a3a9f84800.js" crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <title>teste</title>
+    <title>TripPlan</title>
 </head>
 <body>
     <header>
@@ -29,6 +29,10 @@
                 <button type="button" class="menu-action" command="show-modal" commandfor="new-trip-modal">
                     <i class="ph ph-plus-circle"></i>
                     <span>Criar viagem</span>
+                </button>
+                <button type="button" class="menu-action" command="show-modal" commandfor="profile-modal">
+                    <i class="ph ph-user-gear"></i>
+                    <span>Meu perfil</span>
                 </button>
                 <hr>
                 <a href="/logout" class="logout">
@@ -78,6 +82,7 @@
                 </div>
                 <div class="content">
                     <h4 style="font-weight: 500;">Meta da viagem</h4>
+                    <p id="obs">Passagens aéreas não inclusas</p>
                     <div id="meta">
                         <h3>R$ {{meta|moeda}}</h3>
                         <div id="progress-meta">
@@ -102,7 +107,7 @@
                     <i class="ph ph-piggy-bank"></i>
                 </div>
                 <span>R$ {{dash.guardado|moeda}}</span>
-                <p>{{ '-' if dash.ultimo_mes <= 0 else '+' }} R$ {{dash.ultimo_mes|moeda}} este mês</p>
+                <p>{{ '-' if dash.ultimo_mes < 0 else '' if dash.ultimo_mes == 0 else '+' }} R$ {{dash.ultimo_mes|moeda}} este mês</p>
             </div>
             <div class="cards cotacao">
                 <h4 class="card-title">Cotação hoje</h4>
@@ -110,7 +115,7 @@
                     <i class="ph ph-currency-dollar"></i>
                 </div>
                 <span> R$ 1 = {{dash.simbolo}} {{cotacao|moeda_cotacao}}</span>
-                <p>{{variacao}} {{'%' if variacao != None and variacao != 0 else '' }}</p>
+                <p>{{'-' if variacao < 0 else '' if variacao == 0 else '+'}} {{variacao}} {{'%' if variacao != None and variacao != 0 else '' }}</p>
             </div>
             <div class="cards viagem">
                 <h4 class="card-title">Sua viagem</h4>
@@ -129,7 +134,7 @@
                     {% for nota in dash.notas[:5] %}
                     <div class="nota">
                         <i class="ph ph-push-pin pin"></i>
-                        <p>{{nota[0]}}</p>
+                        <p>{{nota[1]}}</p>
                     </div>
                     {% endfor %}
                 </div>
@@ -176,8 +181,12 @@
                                 </div>
                             {% else %}
                                 {% for nota in dash.notas %}
-                                    <div class="nota nota-modal">
-                                        <p>{{ nota[0] }}</p>
+                                    <div class="nota nota-modal" data-note-id="{{ nota[0] }}">
+                                        <p>{{ nota[1] }}</p>
+                                        <div class="item-actions">
+                                            <button type="button" class="icon-btn edit-note-btn" title="Editar anotação"><i class="ph ph-pencil-simple"></i></button>
+                                            <button type="button" class="icon-btn delete-note-btn" title="Excluir anotação"><i class="ph ph-trash"></i></button>
+                                        </div>
                                     </div>
                                 {% endfor %}
                             {% endif %}
@@ -229,10 +238,16 @@
         <div class="trip-list">
             {% if dash.viagens %}
                 {% for viagem in dash.viagens %}
-                    <a href="/?viagem={{ viagem[0] }}" class="trip-item {% if id_viagem == viagem[0] %}active{% endif %}">
+                    <div class="trip-item {% if id_viagem == viagem[0] %}active{% endif %}" data-trip-id="{{ viagem[0] }}" data-destination="{{ viagem[5] }}" data-start="{{ viagem[3].strftime('%Y-%m-%d') }}" data-end="{{ viagem[4].strftime('%Y-%m-%d') }}">
+                        <a href="/?viagem={{ viagem[0] }}" class="trip-link">
                         <span class="trip-item-name">{{ viagem[1] }}</span>
-                        <i class="ph ph-arrow-right"></i>
-                    </a>
+                            <i class="ph ph-arrow-right"></i>
+                        </a>
+                        <div class="item-actions">
+                            <button type="button" class="icon-btn edit-trip-btn" title="Editar viagem"><i class="ph ph-pencil-simple"></i></button>
+                            <button type="button" class="icon-btn delete-trip-btn" title="Excluir viagem"><i class="ph ph-trash"></i></button>
+                        </div>
+                    </div>
                 {% endfor %}
             {% else %}
                 <p class="empty-trip-message">Você ainda não tem viagens cadastradas.</p>
@@ -266,6 +281,51 @@
             <br>
 
             <button type="submit">Salvar viagem</button>
+        </form>
+    </dialog>
+
+    <dialog id="edit-note-modal" class="modal">
+        <button class="close" command="close" commandfor="edit-note-modal" type="button"><i class="fa fa-close"></i></button>
+        <h2>Editar anotação</h2>
+        <form id="edit-note-form">
+            <input type="hidden" id="edit-note-id">
+            <label for="edit-note-text">Anotação</label>
+            <textarea id="edit-note-text" maxlength="300" required></textarea>
+            <button type="submit">Salvar anotação</button>
+        </form>
+    </dialog>
+
+    <dialog id="edit-trip-modal" class="modal">
+        <button class="close" command="close" commandfor="edit-trip-modal" type="button"><i class="fa fa-close"></i></button>
+        <h2>Editar viagem</h2>
+        <form id="edit-trip-form">
+            <input type="hidden" id="edit-trip-id">
+            <label for="edit-destino">Destino</label>
+            <select id="edit-destino" required>
+                {% for pais in paises %}<option value="{{ pais[0] }}">{{ pais[1] }}</option>{% endfor %}
+            </select>
+            <label for="edit-data-viagem">Data de ida</label>
+            <input type="date" id="edit-data-viagem" required>
+            <label for="edit-data-volta">Data de volta</label>
+            <input type="date" id="edit-data-volta" required>
+            <button type="submit">Salvar alterações</button>
+        </form>
+    </dialog>
+
+    <dialog id="profile-modal" class="modal">
+        <button class="close" command="close" commandfor="profile-modal" type="button"><i class="fa fa-close"></i></button>
+        <h2>Meu perfil</h2>
+        <form id="profile-form" data-user-id="{{ perfil[0] }}">
+            <label for="profile-name">Nome</label>
+            <input type="text" id="profile-name" value="{{ perfil[1] }}" required>
+            <label for="profile-email">E-mail</label>
+            <input type="email" id="profile-email" value="{{ perfil[2] }}" required>
+            <label for="profile-password">Nova senha</label>
+            <input type="password" id="profile-password" placeholder="Deixe vazio para manter a atual">
+            <div class="modal-actions">
+                <button type="submit">Salvar perfil</button>
+                <button type="button" id="delete-account-btn" class="danger-btn" data-user-id="{{ perfil[0] }}">Excluir conta</button>
+            </div>
         </form>
     </dialog>
 

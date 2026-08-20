@@ -4,6 +4,20 @@ import os
 from datetime import datetime, timedelta, date
 
 CACHE = "utils/currency_cache.json"
+API_URL = "https://economia.awesomeapi.com.br/json/last"
+
+
+def _buscar_cotacao(origem, destino):
+    par = f"{origem.upper()}-{destino.upper()}"
+    resposta = requests.get(f"{API_URL}/{par}", timeout=5)
+    resposta.raise_for_status()
+
+    dados = resposta.json().get(par.replace("-", ""))
+    if not dados or "bid" not in dados:
+        raise ValueError("Resposta inválida da AwesomeAPI")
+
+    variacao = dados.get("pctChange") or 0
+    return float(dados["bid"]), float(variacao)
 
 def get_cotacao(origem, destino):
     chave = f"{origem}_{destino}"
@@ -23,19 +37,14 @@ def get_cotacao(origem, destino):
         try:
             data = datetime.fromisoformat(cache[chave]["atualizado"])
 
-            if datetime.now() - data < timedelta(hours=6):
+            if datetime.now() - data < timedelta(minutes=5):
                 return cache[chave]["valor"]
         except (KeyError, ValueError):
             pass
 
     # Tenta buscar uma cotação nova
     try:
-        url = f"https://api.frankfurter.dev/v2/rate/{origem}/{destino}"
-
-        resposta = requests.get(url, timeout=5)
-        resposta.raise_for_status()
-
-        valor = resposta.json()["rate"]
+        valor, _ = _buscar_cotacao(origem, destino)
 
         # Atualiza o cache
         cache[chave] = {
@@ -53,34 +62,18 @@ def get_cotacao(origem, destino):
 
     # Se der timeout ou qualquer erro de conexão,
     # usa o cache antigo
-    except requests.RequestException:
+    except (requests.RequestException, ValueError, TypeError, KeyError):
         if chave in cache:
             return cache[chave]["valor"]
 
         return None
 
 def get_variacao_cotacao(origem, destino):
-    hoje = date.today()
-    ontem = hoje - timedelta(days=1)
-
     try:
-        url_hoje = f"https://api.frankfurter.dev/v2/rate/{origem}/{destino}"
-        url_ontem = f"https://api.frankfurter.dev/v2/rate/{origem}/{destino}?date={ontem}"
-
-        resposta_hoje = requests.get(url_hoje, timeout=5)
-        resposta_ontem = requests.get(url_ontem, timeout=5)
-
-        resposta_hoje.raise_for_status()
-        resposta_ontem.raise_for_status()
-
-        cotacao_hoje = resposta_hoje.json()["rate"]
-        cotacao_ontem = resposta_ontem.json()["rate"]
-
-        variacao = ((cotacao_hoje - cotacao_ontem) / cotacao_ontem) * 100
-
+        _, variacao = _buscar_cotacao(origem, destino)
         return round(variacao, 4)
 
-    except requests.RequestException:
+    except (requests.RequestException, ValueError, TypeError, KeyError):
         return None
     
 def moeda(valor):
