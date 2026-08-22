@@ -18,8 +18,10 @@
             <p class="erro-msg">{{ erro }}</p>
         {% endif %}
         <form method="POST" autocomplete="off" action="/cadastrar-user">
-            <label for="nome">Usuário:</label>
-            <input type="text" id="nome" name="nome" placeholder="Digite seu nome de usuario" autocomplete="off" required>
+            <label for="nome">nome:</label>
+            <input type="text" id="nome" name="nome" placeholder="Digite seu primeiro nome" autocomplete="off" required>
+            <label for="user">Usuário</label>
+            <input type="text" id="username" name="username" placeholder="Digite um nome de usuário" autocomplete="off" required>
             <label for="email">E-mail:</label>
             <input type="email" id="email" name="email" placeholder="Digite seu email" autocomplete="off" required>
             <label for="senha">Crie sua senha:</label>

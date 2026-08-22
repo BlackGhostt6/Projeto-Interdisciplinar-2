@@ -16,7 +16,7 @@
     --success: #2E9B68;
     --warning: #F6A623;
     --danger: #E45756;
-    --background: #F5F7FA;
+    --background: #f3f3f3;
     --card: #FFFFFF;
     --border: #eff2f7;
     --border-header: #dadce1;
@@ -88,7 +88,7 @@ a{
     margin:1rem 0 0 0;
     padding:0;
     font-weight: 500;
-    font-size: xx-large;
+    font-size: clamp(1.5rem, 2.5vw, 2.25rem);
 }
 
 main{
@@ -112,7 +112,7 @@ main{
 }
 
 .card{
-    border: 1px solid var(--border);
+    border: none;
     border-radius: 15px;
     overflow: hidden;
 }
@@ -127,10 +127,14 @@ main{
 }
 
 .meta-img{
+    flex: 0 0 40%;
     width: 40%;
-    height: 100%;
+    min-height: 17rem;
+    max-height: 22rem;
     background-size: cover;
     background-position: center;
+    background-repeat: no-repeat;
+    overflow: hidden;
     position: relative;
 }
 
@@ -150,7 +154,7 @@ main{
 #name-country{
     color: var(--white);
     font-weight: 700;
-    font-size: x-large;
+    font-size: clamp(1.1rem, 1.75vw, 1.75rem);
     -webkit-text-stroke: 1px rgba(0, 0, 0, 0.61);
 }
 
@@ -201,26 +205,30 @@ p{
 
 .content{
     background: var(--card);
-    position: absolute;
-    right: 0;
-    top: 0;
     width:60%;
-    height: 100%;
+    min-height: 100%;
     padding-left: 2%;
+    padding-bottom: 3.5%;
 }
 
 #obs{
-    position: absolute;
-    top: 1.5rem;
-    right: 1rem;
+    margin-left: 12%;
+    flex-wrap: wrap;
     font-size: small;
     color: var(--accent-text);
     font-weight: 600;
 }
 
+#content-title{
+    display: flex;
+    margin: 0;
+    padding: 0;
+    align-items: center;
+}
+
 .content h3{
     font-weight: 600;
-    font-size: xx-large;
+    font-size: clamp(1.5rem, 2.5vw, 2.25rem);
     margin: 0;
     padding: 0;
 }
@@ -232,7 +240,7 @@ p{
 #resume-container{
     display: flex;
     flex-direction: row;
-    height: 16rem;
+    height: fit-content;
     width: 100%;
     gap: 1.8%
 }
@@ -309,18 +317,18 @@ img{
 
 h1{
     font-weight: 500;
-    font-size: x-large;
+    font-size: clamp(1.1rem, 2vw, 1.5rem);
 }
 
 .cards{
     display: flex;
     flex-direction: column;
     width: 30%;
-    height: 100%;
+    min-height: 100%;
     padding-top: 70px;
     background: var(--card);
     border-radius: 15px;
-    border: 1px solid var(--border);
+    border: none;
     align-items: center;
     position: relative;
     gap: 8%
@@ -341,7 +349,7 @@ h1{
     align-items: center;
     justify-content: center;
     border-radius: 50%;
-    font-size: 2.5rem;
+    font-size: clamp(1.75rem, 3vw, 2.5rem);
 }
 
 /* Estilos do card de poupança */
@@ -365,7 +373,7 @@ h1{
 }
 
 .cards span{
-    font-size: 1.4rem;
+    font-size: clamp(1rem, 1.8vw, 1.4rem);
 }
 
 /* Estilos do card de cotação */
@@ -418,7 +426,7 @@ button:hover{
 
 .dash{
     width: 50%;
-    height: 100%;
+    min-height: 100%;
     border-radius: 10px;
     background: var(--card);
     display: flex;
@@ -430,11 +438,11 @@ button:hover{
 .notas {
     min-width: 50%;
     max-width: 50%;
-    height: 49vh;
+    min-height: 49vh;
     padding: 1.5rem;
     background: var(--card);
     border-radius: 15px;
-    border: var(--border) 1px solid;
+    border: none;
 }
 
 .nota{
@@ -443,7 +451,7 @@ button:hover{
     height: 5rem;
     background: var(--background);
     border-radius: 10px;
-    border: var(--border) 1px solid;
+    border: none;
     display: flex;
     flex-direction: row;
     align-items: center;
@@ -501,7 +509,8 @@ button:hover{
 
 .quick-btn{
     width: 100%;
-    height: 5rem;
+    min-height: 5rem;
+    max-height: fit-content;
     border: none;
     border-radius: 10px;
     background: var(--card);
@@ -578,7 +587,7 @@ button:hover{
     flex-direction: row;
     align-items: center;
     justify-content: space-between;
-    padding: 0 .8rem 0 1.2rem;
+    padding: 0 .8rem 0 2.3rem;
 }
 
 #n-modal{
@@ -892,7 +901,7 @@ option{
     top: 1rem;
     right: 1rem;
     border-radius: 50%;
-    font-size: x-large;
+    font-size: clamp(1.25rem, 2vw, 1.5rem);
     border: none;
     color: var(--white);
     background: none;
@@ -1008,12 +1017,7 @@ form button[type="submit"]:hover {
 }
 
 dialog button[type="button"] {
-    background: var(--border);
     color: var(--text);
-}
-
-dialog button[type="button"]:hover {
-    background: var(--text-light);
 }
 
 dialog input:invalid:not(:placeholder-shown) {
@@ -1281,100 +1285,7 @@ dialog input:valid:not(:placeholder-shown) {
     font-size: 1.1rem;
 }
 
-@media (max-width: 900px) {
-    header {
-        padding: 0 1rem;
-        flex-wrap: wrap;
-    }
 
-    #user {
-        position: static;
-        margin-left: auto;
-    }
-
-    #theme-toggle-btn {
-        position: static;
-        margin-left: auto;
-    }
-
-    #id-viagem {
-        position: static;
-        width: 160px;
-    }
-
-    #resume-container,
-    #dash-container {
-        flex-direction: column;
-        height: auto;
-    }
-
-    .meta {
-        min-width: 100%;
-        max-width: 100%;
-        min-height: 18rem;
-    }
-
-    .cards {
-        width: 100%;
-        padding-top: 1rem;
-    }
-
-    .dash,
-    .notas {
-        min-width: 100%;
-        max-width: 100%;
-    }
-
-    .actions {
-        grid-template-columns: 1fr;
-    }
-}
-
-@media (max-width: 600px) {
-    body {
-        padding-bottom: 1.5rem;
-    }
-
-    header {
-        padding: 0 .75rem;
-        gap: .5rem;
-    }
-
-    header img {
-        width: 2rem;
-    }
-
-    #title h2 {
-        font-size: 1.5rem;
-    }
-
-    main {
-        width: 92%;
-    }
-
-    #login,
-    #cadastro {
-        width: min(100%, 420px);
-        position: static;
-        transform: none;
-        margin: 1.5rem auto;
-    }
-
-    .lgpd-box {
-        grid-template-columns: 1rem 1fr;
-        gap: .6rem;
-        padding: .7rem .8rem;
-    }
-
-    #botoes {
-        grid-template-columns: 1fr;
-    }
-
-    #login-btn,
-    #login-theme-btn {
-        width: 100%;
-    }
-}
 
 @keyframes modal-in {
     from {

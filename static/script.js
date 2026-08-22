@@ -195,6 +195,7 @@ if (profileForm) {
         try {
             await apiRequest(`/api/usuario/${profileForm.dataset.userId}`, "PUT", {
                 nome: document.getElementById("profile-name").value.trim(),
+                username: document.getElementById("profile-user").value.trim(),
                 email: document.getElementById("profile-email").value.trim(),
                 senha: document.getElementById("profile-password").value
             });

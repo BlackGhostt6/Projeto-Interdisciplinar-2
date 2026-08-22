@@ -22,17 +22,9 @@
             </summary>
 
             <div class="user-options">
-                <button type="button" class="menu-action" command="show-modal" commandfor="trips-modal">
-                    <i class="ph ph-airplane"></i>
-                    <span>Viagens</span>
-                </button>
                 <button type="button" class="menu-action" command="show-modal" commandfor="new-trip-modal">
                     <i class="ph ph-plus-circle"></i>
                     <span>Criar viagem</span>
-                </button>
-                <button type="button" class="menu-action" command="show-modal" commandfor="profile-modal">
-                    <i class="ph ph-user-gear"></i>
-                    <span>Meu perfil</span>
                 </button>
                 <hr>
                 <a href="/logout" class="logout">
@@ -60,7 +52,7 @@
         {% else %}
         <section id="resume-container">
             <div class="card meta">
-                <div class="meta-img">
+                <div class="meta-img" style="background-image: url('{{ dash.imagem }}');">
                     <section class="meta-content">
                         <div class="title-country">
                             <div id="flag-circle">
@@ -81,8 +73,10 @@
                     </section>
                 </div>
                 <div class="content">
-                    <h4 style="font-weight: 500;">Meta da viagem</h4>
-                    <p id="obs">Passagens aéreas não inclusas</p>
+                    <div id="content-title">
+                        <h4 style="font-weight: 500;">Meta da viagem</h4>
+                        <p id="obs">Passagens aéreas não inclusas</p>
+                    </div>
                     <div id="meta">
                         <h3>R$ {{meta|moeda}}</h3>
                         <div id="progress-meta">
@@ -114,8 +108,8 @@
                 <div class="icone-card cotacao-i">
                     <i class="ph ph-currency-dollar"></i>
                 </div>
-                <span> R$ 1 = {{dash.simbolo}} {{cotacao|moeda_cotacao}}</span>
-                <p>{{'-' if variacao < 0 else '' if variacao == 0 else '+'}} {{variacao}} {{'%' if variacao != None and variacao != 0 else '' }}</p>
+                <span>{{dash.simbolo}} 1 = R$ {{cotacao|moeda_cotacao}}</span>
+                <p> {{variacao}} {{'%' if variacao not in (None, '0') else '' }}</p>
             </div>
             <div class="cards viagem">
                 <h4 class="card-title">Sua viagem</h4>
@@ -208,11 +202,11 @@
                             <p>Ver todas as anotações</p>
                         </div>
                     </button>
-                    <button class="quick-btn">
-                        <i class="ph ph-clock"></i>
+                    <button class="quick-btn" type="button" class="menu-action" command="show-modal" commandfor="profile-modal">
+                        <i class="ph ph-user"></i>
                         <div class="button-desc">
-                            <h3>Ver movimentações</h3>
-                            <p>Visualizar todas as transações</p>
+                            <h3>Perfil</h3>
+                            <p>Ver, editar ou deletar conta</p>
                         </div>
                     </button>
                     <button class="quick-btn" type="button" command="show-modal" commandfor="trips-modal">
@@ -318,8 +312,10 @@
         <form id="profile-form" data-user-id="{{ perfil[0] }}">
             <label for="profile-name">Nome</label>
             <input type="text" id="profile-name" value="{{ perfil[1] }}" required>
+            <label for="profile-user">Usuário</label>
+            <input type="text" id="profile-user" value="{{ perfil[2] }}" required>
             <label for="profile-email">E-mail</label>
-            <input type="email" id="profile-email" value="{{ perfil[2] }}" required>
+            <input type="email" id="profile-email" value="{{ perfil[3] }}" required>
             <label for="profile-password">Nova senha</label>
             <input type="password" id="profile-password" placeholder="Deixe vazio para manter a atual">
             <div class="modal-actions">

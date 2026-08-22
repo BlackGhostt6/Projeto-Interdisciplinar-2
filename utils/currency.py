@@ -71,7 +71,13 @@ def get_cotacao(origem, destino):
 def get_variacao_cotacao(origem, destino):
     try:
         _, variacao = _buscar_cotacao(origem, destino)
-        return round(variacao, 4)
+        variacao = round(variacao, 4)
+
+        if variacao > 0:
+            return f"+{variacao:.4f}"
+        if variacao < 0:
+            return f"{variacao:.4f}"
+        return "0"
 
     except (requests.RequestException, ValueError, TypeError, KeyError):
         return None

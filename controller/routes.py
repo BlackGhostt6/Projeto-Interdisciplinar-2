@@ -107,8 +107,8 @@ def getDash(id):
 
     datas=cursor.fetchone()
 
-    cursor.execute("select * from usuarios where id_user = %s", (user,))
-    nome = cursor.fetchone()[1]
+    cursor.execute("SELECT nome FROM usuarios WHERE id_user = %s", (user,))
+    nome = cursor.fetchone()[0]
 
     close(conn, cursor)
     return {
@@ -147,7 +147,7 @@ def index():
         ORDER BY v.id_viagem ASC
     """, (session["usuario_id"],))
     viagens = cursor.fetchall()
-    cursor.execute("SELECT id_user, nome, email FROM usuarios WHERE id_user = %s", (session["usuario_id"],))
+    cursor.execute("SELECT id_user, nome, username, email FROM usuarios WHERE id_user = %s", (session["usuario_id"],))
     perfil = cursor.fetchone()
     close(conn, cursor)
 
@@ -169,8 +169,8 @@ def index():
     dash = getDash(id_viagem)
     meta = dash['custo'] * dash['dias']
     percent = round((dash['guardado'] / meta) * 100, 1) if meta else 0
-    cotacao = get_cotacao("brl", dash['cotacao'])
-    variacao = get_variacao_cotacao("brl", dash['cotacao'])
+    cotacao = get_cotacao(dash['cotacao'], "brl")
+    variacao = get_variacao_cotacao(dash['cotacao'], "brl")
 
     if dash['guardado'] < meta:
         target = f"Faltam R${moeda(meta - dash['guardado'])} para sua meta"
@@ -194,12 +194,17 @@ def login():
             erro = 'Preencha usuário e senha.'
         else:
             conn, cursor = connection()
-            cursor.execute("SELECT * FROM usuarios WHERE email = %s OR nome = %s LIMIT 1", (usuario, usuario))
+            cursor.execute("""
+                SELECT id_user, nome, username, email, senha
+                FROM usuarios
+                WHERE email = %s OR username = %s
+                LIMIT 1
+            """, (usuario, usuario))
             usuario_db = cursor.fetchone()
             close(conn, cursor)
 
             if usuario_db:
-                senha_hash = usuario_db[3]
+                senha_hash = usuario_db[4]
                 senha_valida = False
 
                 if senha_hash.startswith('pbkdf2:') or senha_hash.startswith('scrypt:') or senha_hash.startswith('argon2:') or senha_hash.startswith('bcrypt:'):
@@ -428,21 +433,19 @@ def criar_viagem():
 def cadastrar():
     dados = request.form.to_dict()
     nome = (dados.get('nome') or '').strip()
+    username = (dados.get('username') or '').strip()
     email = (dados.get('email') or '').strip()
     senha = dados.get('senha') or ''
     aceita_termos = request.form.get('aceita_termos') == 'on'
 
-    if not nome or not email or not senha:
-        return render_template('cadastro.html', erro='Preencha nome, e-mail e senha.')
+    if not nome or not email or not senha or not username:
+        return render_template('cadastro.html', erro='Preencha nome, usuário, e-mail e senha.')
 
     if not aceita_termos:
         return render_template('cadastro.html', erro='Você precisa aceitar os termos de uso e LGPD para continuar.')
 
-    if aceita_termos:
-        aceita = True
-
     conn, cursor = connection()
-    cursor.execute("SELECT id_user FROM usuarios WHERE email = %s OR nome = %s LIMIT 1", (email, nome))
+    cursor.execute("SELECT id_user FROM usuarios WHERE email = %s OR username = %s LIMIT 1", (email, username))
     usuario_existente = cursor.fetchone()
 
     if usuario_existente:
@@ -451,17 +454,15 @@ def cadastrar():
 
     senha_hash = generate_password_hash(senha)
     cursor.execute("""
-        INSERT INTO usuarios (nome, email, senha, aceitou_lgpd) VALUES (%s, %s, %s, %s)
-""", (nome, email, senha_hash, aceita))
+        INSERT INTO usuarios (nome, username ,email, senha, aceitou_lgpd) VALUES (%s, %s, %s, %s, %s)
+""", (nome, username, email, senha_hash, aceita_termos))
     
-    cursor.execute("SELECT id_user, senha FROM usuarios WHERE nome = %s LIMIT 1", (nome,))
-    novo_user = cursor.fetchone() 
-
     conn.commit()
+    novo_user_id = cursor.lastrowid
     close(conn, cursor)  
 
-    session['usuario_id'] = novo_user[0]
-    session['usuario_nome'] = novo_user[1]
+    session['usuario_id'] = novo_user_id
+    session['usuario_nome'] = nome
     return redirect(url_for('routes.index'))
 
 # ====================== ROTAS DE PUT ======================
@@ -525,21 +526,26 @@ def editar_usuario(id_user):
 
     dados = request.get_json(silent=True) or {}
     nome = (dados.get("nome") or "").strip()
+    username = (dados.get("username") or "").strip()
     email = (dados.get("email") or "").strip()
     senha = dados.get("senha") or ""
-    if not nome or not email:
-        return json_error("Nome e e-mail são obrigatórios.")
+    if not nome or not username or not email:
+        return json_error("Nome, usuário e e-mail são obrigatórios.")
 
     conn, cursor = connection()
-    cursor.execute("SELECT id_user FROM usuarios WHERE (email = %s OR nome = %s) AND id_user <> %s LIMIT 1", (email, nome, id_user))
+    cursor.execute("""
+        SELECT id_user FROM usuarios
+        WHERE (email = %s OR username = %s) AND id_user <> %s
+        LIMIT 1
+    """, (email, username, id_user))
     if cursor.fetchone():
         close(conn, cursor)
-        return json_error("Nome ou e-mail já cadastrado.", 409)
+        return json_error("Usuário ou e-mail já cadastrado.", 409)
 
     if senha:
-        cursor.execute("UPDATE usuarios SET nome = %s, email = %s, senha = %s WHERE id_user = %s", (nome, email, generate_password_hash(senha), id_user))
+        cursor.execute("UPDATE usuarios SET nome = %s, username = %s, email = %s, senha = %s WHERE id_user = %s", (nome, username, email, generate_password_hash(senha), id_user))
     else:
-        cursor.execute("UPDATE usuarios SET nome = %s, email = %s WHERE id_user = %s", (nome, email, id_user))
+        cursor.execute("UPDATE usuarios SET nome = %s, username = %s, email = %s WHERE id_user = %s", (nome, username, email, id_user))
     conn.commit()
     close(conn, cursor)
     session["usuario_nome"] = nome
