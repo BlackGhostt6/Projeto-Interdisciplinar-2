@@ -1299,3 +1299,631 @@ dialog input:valid:not(:placeholder-shown) {
     }
 }
 
+/* Responsividade / UI mobile */
+@media (max-width: 900px) {
+    header {
+        padding: 0 1.25rem;
+    }
+
+    #user {
+        right: 1.25rem;
+    }
+
+    main {
+        width: calc(100% - 2rem);
+    }
+
+    #resume-container {
+        gap: 1rem;
+    }
+
+    .meta {
+        min-width: 48%;
+        max-width: 48%;
+    }
+
+    .content {
+        width: 52%;
+    }
+
+    .cards {
+        width: calc(33.333% - .7rem);
+    }
+
+    #dash-container {
+        gap: 1rem;
+    }
+
+    .dash,
+    .notas {
+        min-width: 0;
+        max-width: none;
+    }
+
+    .dash {
+        width: 58%;
+    }
+
+    .notas {
+        width: 42%;
+    }
+}
+
+@media (max-width: 900px) {
+    :root {
+        --mobile-gap: .75rem;
+        --mobile-radius: 14px;
+    }
+
+    html {
+        scroll-behavior: smooth;
+    }
+
+    body {
+        overflow-x: hidden;
+        padding-bottom: calc(1rem + env(safe-area-inset-bottom));
+    }
+
+    header {
+        min-height: 4rem;
+        padding: .55rem .8rem;
+        gap: .5rem;
+    }
+
+    header > h1 {
+        font-size: 1.35rem;
+        white-space: nowrap;
+    }
+
+    header > img {
+        width: 2.15rem;
+        height: 2.15rem;
+    }
+
+    #user {
+        right: .8rem;
+    }
+
+    .user-menu summary {
+        min-height: 2.7rem;
+        padding: .4rem .3rem .4rem .5rem;
+    }
+
+    .user-menu summary span {
+        max-width: 5.75rem;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .user-options {
+        right: 0;
+        width: min(13rem, calc(100vw - 1.5rem));
+    }
+
+    main {
+        width: calc(100% - 1rem);
+        gap: var(--mobile-gap);
+    }
+
+    #title {
+        padding: 1rem 0 .35rem;
+        min-height: 4.8rem;
+    }
+
+    #title h2 {
+        max-width: calc(100% - 3rem);
+        font-size: clamp(1.75rem, 7vw, 2.2rem);
+        line-height: 1.1;
+        margin-top: .25rem;
+    }
+
+    #title p {
+        font-size: 1.08rem;
+        margin-top: .3rem;
+    }
+
+    #theme-toggle-btn {
+        top: .95rem;
+        right: 0;
+        width: 2.8rem;
+        height: 2.5rem;
+        padding: 0;
+        border-radius: 50%;
+        font-size: 0;
+    }
+
+    #theme-toggle-btn i {
+        font-size: 1.05rem;
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+
+    }
+
+    /* Resumo: mantém duas áreas visíveis, em vez de transformar tudo em uma coluna */
+    #resume-container {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) minmax(0, 1.18fr);
+        gap: var(--mobile-gap);
+        align-items: stretch;
+    }
+
+    .meta {
+        width: 100%;
+        min-width: 0;
+        max-width: none;
+        min-height: 14rem;
+        height: 100%;
+        border-radius: var(--mobile-radius);
+        overflow: hidden;
+}
+
+    .meta-img {
+        width: 100%;
+        height: 100%;
+        min-height: 14rem;
+        max-height: none;
+        flex: 1;
+    }
+
+    .meta-content {
+        height: 60%;
+        padding: .7rem;
+        gap: .35rem;
+        justify-content: flex-end;
+        align-items: flex-start;
+    }
+
+    #name-country {
+        font-size: 1.25rem;
+        line-height: 1.15;
+    }
+
+    .title-country {
+        grid-template-columns: 2rem 1fr;
+        gap: .4rem;
+        width: 100%;
+    }
+
+    #flag-circle {
+        width: 2rem;
+        height: 2rem;
+    }
+
+    #trip-goal,
+    #trip-goal i,
+    #trip-goal span,
+    #trip-time,
+    #trip-time i,
+    #trip-time span {
+        font-size: .96rem;
+        line-height: 1.25;
+    }
+
+    .content {
+        width: 100%;
+        min-width: 0;
+        min-height: 14rem;
+        padding: 1rem;
+        border-radius: var(--mobile-radius);
+        overflow: hidden;
+    }
+
+    #content-title {
+        align-items: flex-start;
+        gap: .25rem;
+        flex-wrap: wrap;
+    }
+
+    #content-title h4{
+        margin: .5rem 0;
+    }
+
+    .content h3 {
+        font-size: 1.35rem;
+        line-height: 1.2;
+    }
+
+    #obs {
+        margin-left: 0;
+        font-size: .95rem;
+        line-height: 1.2;
+    }
+
+    #meta {
+        width: 100%;
+        margin-top: .85rem;
+    }
+
+    #meta p {
+        font-size: .8rem;
+        line-height: 1.3;
+    }
+
+    .target {
+        grid-template-columns: 1.6rem 1fr;
+        margin-top: .75rem;
+        padding: .65rem;
+        border-radius: 10px;
+    }
+
+    .target i {
+        font-size: 1.45rem;
+    }
+
+    #target-desc {
+        width: 100%;
+    }
+
+    #target-desc h4 {
+        font-size: .90rem;
+    }
+
+    #target-desc p {
+        display: none
+    }
+
+    /* Cards: 3 cards compactas em uma linha, como indicadores de dashboard */
+    .cards {
+        width: 100%;
+        min-width: 0;
+        min-height: 7rem;
+        padding: .7rem .55rem;
+        border-radius: var(--mobile-radius);
+        gap: .3rem;
+        justify-content: center;
+    }
+
+    .card-title {
+        position: static;
+        width: 100%;
+        font-size: .96rem;
+        line-height: 1.1;
+        text-align: center;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .icone-card {
+        width: 2.5rem;
+        height: 2.5rem;
+        font-size: 1.35rem;
+    }
+
+    .cards span {
+        font-size: 1.1rem;
+        line-height: 1.1;
+    }
+
+    .cards p {
+        font-size: .88rem;
+        line-height: 1.15;
+        text-align: center;
+    }
+
+    /* Os 3 indicadores ocupam uma linha */
+    #resume-container > .cards {
+        grid-column: span 1;
+    }
+
+    /* Dashboard: gráfico e notas ficam lado a lado quando há espaço */
+    #dash-container {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: var(--mobile-gap);
+        align-items: stretch;
+    }
+
+    .dash,
+    .notas {
+        width: 100%;
+        min-width: 0;
+        max-width: none;
+        border-radius: var(--mobile-radius);
+    }
+
+    .dash {
+        min-height: 0;
+        padding: .75rem;
+        justify-content: flex-start;
+    }
+
+    .grafico {
+        width: 100%;
+        height: 180px;
+    }
+
+    /* Ações ficam logo abaixo do gráfico e continuam em 2 colunas */
+    .actions {
+        width: 100%;
+        grid-template-columns: 1fr 1fr;
+        gap: .5rem;
+        margin-top: .65rem;
+    }
+
+    .quick-btn {
+        min-height: 4rem;
+        padding: .55rem .6rem;
+        gap: .5rem;
+        border-radius: 11px;
+    }
+
+    .quick-btn i {
+        flex: 0 0 auto;
+        font-size: 1.45rem;
+    }
+
+    .quick-btn h3 {
+        font-size: 1.02rem;
+        line-height: 1.1;
+    }
+
+    .quick-btn p {
+        font-size: .86rem;
+        line-height: 1.15;
+    }
+
+    .quick-notes {
+        width: 100%;
+        margin-top: .65rem;
+        padding: .55rem;
+        gap: .4rem;
+        border-radius: 10px;
+    }
+
+    #notes-txt {
+        padding-top: .3rem;
+    }
+
+    #notes-txt span {
+        font-size: 1.25rem;
+    }
+
+    .notas {
+        min-height: 0;
+        padding: .75rem;
+    }
+
+    .notas h3,
+    .quick > h3 {
+        font-size: 1.12rem;
+        line-height: 1.15;
+        margin-bottom: .45rem;
+    }
+
+    .notas-container {
+        height: auto;
+        max-height: 17rem;
+        gap: .45rem;
+    }
+
+    .nota {
+        width: 100%;
+        max-width: 100%;
+        min-height: 3.4rem;
+        height: auto;
+        padding: .65rem .55rem .65rem 1.7rem;
+        font-size: .97rem;
+    }
+
+    .pin {
+        top: 4px;
+        left: 4px;
+        font-size: 1rem;
+    }
+
+    textarea {
+        width: 100%;
+        min-height: 5.5rem;
+        font-size: .85rem;
+    }
+
+    /* Touch targets */
+    button,
+    select,
+    input[type="button"],
+    input[type="submit"],
+    .icon-btn {
+        min-height: 2.75rem;
+    }
+
+    .icon-btn {
+        min-width: 2.75rem;
+        display: grid;
+        place-items: center;
+    }
+
+    /* Modais */
+    dialog {
+        width: calc(100% - 1rem);
+        max-width: none;
+        max-height: calc(100dvh - 1rem);
+        margin: auto;
+        border-radius: var(--mobile-radius);
+    }
+
+    dialog h2 {
+        padding: 1rem;
+        font-size: 1.4rem;
+    }
+
+    dialog form {
+        padding: .85rem 1rem 1rem;
+    }
+
+    dialog input,
+    dialog select,
+    dialog textarea,
+    dialog button,
+    form button {
+        min-height: 2.8rem;
+        font-size: .95rem;
+    }
+
+    .trip-list {
+        padding: .75rem 1rem 0;
+    }
+
+    .trip-item {
+        min-height: 3.1rem;
+        padding: .55rem .65rem;
+    }
+
+    .trip-modal-actions {
+        padding: .85rem 1rem 1rem;
+    }
+
+    /* Login/cadastro */
+    #login,
+    #cadastro {
+        position: static;
+        width: calc(100% - 1rem);
+        margin: .75rem auto;
+        padding: 1.35rem 1rem 1rem;
+        transform: none;
+    }
+
+    #login h1,
+    #cadastro h1 {
+        font-size: 2.1rem;
+    }
+
+    #login input,
+    #cadastro input:not([type="checkbox"]),
+    #login-btn,
+    #login-theme-btn {
+        min-height: 2.9rem;
+        font-size: .95rem;
+    }
+
+    #login-theme-btn {
+        width: 3rem;
+        min-width: 3rem;
+    }
+
+    .lgpd-box {
+        padding: .7rem;
+    }
+
+    footer {
+        margin: .75rem 0 1rem;
+        font-size: 1rem;
+    }
+}
+
+/* Celulares estreitos: somente aqui reduzimos para uma coluna */
+@media (max-width: 390px) {
+    header > h1 {
+        font-size: .95rem;
+    }
+
+    .user-menu summary span {
+        max-width: 5rem;
+    }
+
+    #resume-container {
+        grid-template-columns: 1fr 1fr;
+    }
+
+    .meta {
+        min-height: 12.5rem;
+    }
+
+    .meta-img {
+        min-height: 12.5rem;
+    }
+
+    .content {
+        min-height: 12.5rem;
+        padding: .8rem;
+    }
+
+    .content h3 {
+        font-size: .95rem;
+    }
+
+    .cards {
+        min-height: 6.5rem;
+    }
+
+    .icone-card {
+        width: 2.2rem;
+        height: 2.2rem;
+        font-size: 1.2rem;
+    }
+
+    .cards span {
+        font-size: .72rem;
+    }
+
+    #dash-container {
+        grid-template-columns: 1fr;
+    }
+
+    .grafico {
+        height: 190px;
+    }
+
+    .notas {
+        min-height: 12rem;
+    }
+}
+
+@media (max-width: 340px) {
+    #resume-container {
+        grid-template-columns: 1fr;
+    }
+
+    .meta,
+    .content,
+    #resume-container > .cards {
+        grid-column: 1;
+    }
+
+    .meta,
+    .meta-img,
+    .content {
+        min-height: 13rem;
+    }
+
+    .cards {
+        min-height: 6rem;
+    }
+
+    #botoes {
+        grid-template-columns: 1fr 3rem;
+    }
+}
+
+@media (max-height: 600px) and (max-width: 600px) {
+    #title {
+        padding-top: .6rem;
+    }
+
+    #title h2 {
+        font-size: 1.35rem;
+    }
+
+    .meta,
+    .meta-img,
+    .content {
+        min-height: 11rem;
+    }
+
+    .grafico {
+        height: 145px;
+    }
+
+    #login,
+    #cadastro {
+        margin: .5rem auto;
+    }
+
+    #login::before,
+    #cadastro::before {
+        margin-bottom: .75rem;
+    }
+}
