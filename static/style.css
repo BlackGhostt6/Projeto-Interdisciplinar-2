@@ -481,6 +481,7 @@ button:hover{
     flex-wrap: wrap;
     align-content: flex-start;
     overflow-y: auto;
+    overflow-x: hidden;
 }
 
 .notas-container::-webkit-scrollbar {
@@ -500,17 +501,17 @@ button:hover{
 .actions{
     display: grid;
     grid-template-columns: 1fr 1fr;
-    place-items: center;
+    place-items: stretch;
     width: 95%;
     gap: 1rem;
     margin-top: 1.5%;
-    
+    align-items: stretch;
 }
 
 .quick-btn{
     width: 100%;
     min-height: 5rem;
-    max-height: fit-content;
+    height: 100%;
     border: none;
     border-radius: 10px;
     background: var(--card);
@@ -519,29 +520,41 @@ button:hover{
     justify-content: left;
     gap: 10px;
     padding: 0 .8rem 0 1.2rem;
-    border-radius: 10px;
     border: 1px solid var(--border);
+    box-sizing: border-box;
 }
 
-.quick-btn p, h3{
-    margin:2px;
-    padding:0;
+.quick-btn h3,
+.quick-btn p{
+    margin: 0;
+    padding: 0;
+}
+
+.button-desc {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    flex: 1;
+    min-width: 0;
 }
 
 .quick-btn h3{
     font-size: 1rem;
     font-weight: 400;
     text-align: left;
+    line-height: 1.2;
 }
 
 .quick-btn p{
     font-size: .7rem;
     font-weight: 200;
     text-align: left;
+    line-height: 1.3;
 }
 
 .quick-btn i{
     font-size: 2rem;
+    flex-shrink: 0;
 }
 
 .quick-notes article{
@@ -578,16 +591,17 @@ button:hover{
 }
 
 .nota-modal{
-    width: 100%;
     height: 5rem;
-    background: var(--background);
+    background: transparent;
     border-radius: 10px;
-    border: var(--border) 1px solid;
+    border: none;
     display: flex;
     flex-direction: row;
     align-items: center;
     justify-content: space-between;
-    padding: 0 .8rem 0 2.3rem;
+    padding: 0 .8rem 0 2.3rem;  
+    overflow-wrap: anywhere;
+    width: 90%;
 }
 
 #n-modal{
@@ -614,12 +628,6 @@ button:hover{
     border-radius: 999px;
 }
 
-.nota-modal{
-    overflow-wrap: anywhere;
-    background: transparent;
-    width: 90%;
-    border: none;
-}
 
 textarea {
     width: 95%;
@@ -1413,13 +1421,13 @@ dialog input:valid:not(:placeholder-shown) {
 
     #title h2 {
         max-width: calc(100% - 3rem);
-        font-size: clamp(1.75rem, 7vw, 2.2rem);
+        font-size: clamp(1.60rem, 6.85vw, 2.05rem);
         line-height: 1.1;
         margin-top: .25rem;
     }
 
     #title p {
-        font-size: 1.08rem;
+        font-size: .93rem;
         margin-top: .3rem;
     }
 
@@ -1442,10 +1450,10 @@ dialog input:valid:not(:placeholder-shown) {
 
     }
 
-    /* Resumo: mantém duas áreas visíveis, em vez de transformar tudo em uma coluna */
+    /* Resumo em cima e os 3 cards logo abaixo no mobile */
     #resume-container {
         display: grid;
-        grid-template-columns: minmax(0, 1fr) minmax(0, 1.18fr);
+        grid-template-columns: repeat(3, minmax(0, 1fr));
         gap: var(--mobile-gap);
         align-items: stretch;
     }
@@ -1458,7 +1466,8 @@ dialog input:valid:not(:placeholder-shown) {
         height: 100%;
         border-radius: var(--mobile-radius);
         overflow: hidden;
-}
+        grid-column: 1 / -1;
+    }
 
     .meta-img {
         width: 100%;
@@ -1477,7 +1486,7 @@ dialog input:valid:not(:placeholder-shown) {
     }
 
     #name-country {
-        font-size: 1.25rem;
+        font-size: 1.10rem;
         line-height: 1.15;
     }
 
@@ -1498,7 +1507,7 @@ dialog input:valid:not(:placeholder-shown) {
     #trip-time,
     #trip-time i,
     #trip-time span {
-        font-size: .96rem;
+        font-size: .81rem;
         line-height: 1.25;
     }
 
@@ -1522,14 +1531,14 @@ dialog input:valid:not(:placeholder-shown) {
     }
 
     .content h3 {
-        font-size: 1.35rem;
+        font-size: 1.20rem;
         line-height: 1.2;
     }
 
     #obs {
-        margin-left: 0;
-        font-size: .95rem;
-        line-height: 1.2;
+        margin-left: 10%;
+        font-size: .70rem;
+        line-height: 2.5rem;
     }
 
     #meta {
@@ -1538,7 +1547,7 @@ dialog input:valid:not(:placeholder-shown) {
     }
 
     #meta p {
-        font-size: .8rem;
+        font-size: .65rem;
         line-height: 1.3;
     }
 
@@ -1558,14 +1567,14 @@ dialog input:valid:not(:placeholder-shown) {
     }
 
     #target-desc h4 {
-        font-size: .90rem;
+        font-size: .75rem;
     }
 
     #target-desc p {
         display: none
     }
 
-    /* Cards: 3 cards compactas em uma linha, como indicadores de dashboard */
+    /* Cards: 3 cards compactos na linha abaixo do resumo */
     .cards {
         width: 100%;
         min-width: 0;
@@ -1579,7 +1588,7 @@ dialog input:valid:not(:placeholder-shown) {
     .card-title {
         position: static;
         width: 100%;
-        font-size: .96rem;
+        font-size: .81rem;
         line-height: 1.1;
         text-align: center;
         white-space: nowrap;
@@ -1594,17 +1603,16 @@ dialog input:valid:not(:placeholder-shown) {
     }
 
     .cards span {
-        font-size: 1.1rem;
+        font-size: .95rem;
         line-height: 1.1;
     }
 
     .cards p {
-        font-size: .88rem;
+        font-size: .73rem;
         line-height: 1.15;
         text-align: center;
     }
 
-    /* Os 3 indicadores ocupam uma linha */
     #resume-container > .cards {
         grid-column: span 1;
     }
@@ -1616,6 +1624,11 @@ dialog input:valid:not(:placeholder-shown) {
         gap: var(--mobile-gap);
         align-items: stretch;
     }
+
+    .notes-modal{
+    height: 70vh
+}   
+
 
     .dash,
     .notas {
@@ -1646,7 +1659,8 @@ dialog input:valid:not(:placeholder-shown) {
 
     .quick-btn {
         min-height: 4rem;
-        padding: .55rem .6rem;
+        height: 100%;
+        padding: .6rem .6rem;
         gap: .5rem;
         border-radius: 11px;
     }
@@ -1662,7 +1676,7 @@ dialog input:valid:not(:placeholder-shown) {
     }
 
     .quick-btn p {
-        font-size: .86rem;
+        font-size: .6rem;
         line-height: 1.15;
     }
 
@@ -1695,9 +1709,13 @@ dialog input:valid:not(:placeholder-shown) {
     }
 
     .notas-container {
-        height: auto;
-        max-height: 17rem;
+        display: flex;
+        flex-direction: column;
+        flex-wrap: nowrap;
+        height: 100%;
         gap: .45rem;
+        overflow-x: hidden;
+        overflow-y: auto;
     }
 
     .nota {
@@ -1707,6 +1725,7 @@ dialog input:valid:not(:placeholder-shown) {
         height: auto;
         padding: .65rem .55rem .65rem 1.7rem;
         font-size: .97rem;
+        flex: 0 0 auto;
     }
 
     .pin {
@@ -1842,7 +1861,7 @@ dialog input:valid:not(:placeholder-shown) {
     }
 
     .content h3 {
-        font-size: .95rem;
+        font-size: .80rem;
     }
 
     .cards {
@@ -1856,7 +1875,7 @@ dialog input:valid:not(:placeholder-shown) {
     }
 
     .cards span {
-        font-size: .72rem;
+        font-size: .57rem;
     }
 
     #dash-container {
