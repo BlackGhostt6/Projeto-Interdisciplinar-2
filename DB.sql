@@ -1,7 +1,3 @@
-drop database if exists viagem_app;
-create database viagem_app;
-use viagem_app; 
-
 drop table if exists paises;
 create table paises (
 	id_pais int primary key auto_increment,
