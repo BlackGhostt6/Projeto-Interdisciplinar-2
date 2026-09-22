@@ -364,6 +364,23 @@ h1{
      background:rgb(from var(--success) r g b / 20%);
 }
 
+.destino-i{
+     background:rgb(from var(--warning) r g b / 20%);
+}
+
+.destino-i i{
+    color: var(--warning)
+}
+
+.destino span{
+    color: var(--warning);
+    font-weight: 600;
+}
+
+.destino{
+    display: none
+}
+
 .poupanca-i i{
     color: var(--success)
 }
@@ -1401,6 +1418,15 @@ dialog input:valid:not(:placeholder-shown) {
     .user-menu summary {
         min-height: 2.7rem;
         padding: .4rem .3rem .4rem .5rem;
+    }
+
+    .destino-i{
+        margin: 5%;
+    }
+
+    .destino{
+        display: flex;
+
     }
 
     .user-menu summary span {
