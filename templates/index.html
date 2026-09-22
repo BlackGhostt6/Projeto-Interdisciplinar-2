@@ -13,7 +13,7 @@
 </head>
 <body>
     <header>
-        <img src="{{ url_for('static', filename='img/favicon.png') }}" alt=""> <h1>TripPlan</h1>
+        <img src="{{ url_for('static', filename='img/favicon.png') }}" alt=""> <h1>PlannerTrip</h1>
         <details class="user-menu" id="user">
             <summary>
                 <i class="ph ph-user"></i>
@@ -140,7 +140,7 @@
                     <dialog id="add_money" class="modal">
                         <button class="close" command="close" commandfor="add_money"><i class="fa fa-close"></i></button>
                         <h2>Nova movimentação</h2>
-                        <form action="/api/movimentacao" method="POST">
+                        <form action="/api/movimentacao" id="movement" method="POST">
                             <input type="hidden" name="id_viagem" value="{{ id_viagem }}">
 
                             <label for="tipo">Tipo</label>
