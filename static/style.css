@@ -692,6 +692,14 @@ textarea:focus {
     right: 0;
 }
 
+.primary-btn{
+    margin-top: 20px;
+    background-color: var(--accent);
+    color: var(--text);
+}
+
+
+
 #id-viagem{
     width: 10rem;
     height: 3rem;
@@ -752,7 +760,7 @@ option{
     color: var(--white);
 }
 
-#theme-toggle-btn:hover {
+#theme-toggle-btn:hover, .primary-btn:hover {
     background-color: var(--accent-text);
 }
 
