@@ -11,7 +11,7 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <title>PlannerTrip</title>
 </head>
-<body>
+<body data-viagem-id="{{ id_viagem if id_viagem is not none else '' }}">
     <header>
         <img src="{{ url_for('static', filename='img/favicon.png') }}" alt=""> <h1>PlannerTrip</h1>
         <details class="user-menu" id="user">
@@ -246,7 +246,7 @@
             {% if dash.viagens %}
                 {% for viagem in dash.viagens %}
                     <div class="trip-item {% if id_viagem == viagem[0] %}active{% endif %}" data-trip-id="{{ viagem[0] }}" data-destination="{{ viagem[5] }}" data-start="{{ viagem[3].strftime('%Y-%m-%d') }}" data-end="{{ viagem[4].strftime('%Y-%m-%d') }}">
-                        <a href="/?viagem={{ viagem[0] }}" class="trip-link">
+                        <a href="{{ url_for('routes.selecionar_viagem', id_viagem=viagem[0]) }}" class="trip-link">
                         <span class="trip-item-name">{{ viagem[2] }}</span>
                             <i class="ph ph-arrow-right"></i>
                         </a>

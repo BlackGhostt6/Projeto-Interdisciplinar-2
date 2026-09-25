@@ -79,8 +79,7 @@ document.querySelectorAll(".close[command='close']").forEach((button) => {
 
 const textarea = document.getElementById("new-note");
 if (textarea) {
-    const params = new URLSearchParams(window.location.search);
-    const idViagem = params.get("viagem");
+    const idViagem = document.body.dataset.viagemId || null;
 
     textarea.addEventListener("keydown", async (event) => {
         if (event.key === "Enter" && !event.shiftKey) {

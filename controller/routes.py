@@ -132,6 +132,20 @@ def getDash(id):
 
 # ====================== rotas de exibição ======================
 
+@routes.route("/selecionar-viagem/<int:id_viagem>")
+def selecionar_viagem(id_viagem):
+    if "usuario_id" not in session:
+        return redirect(url_for("routes.login"))
+
+    conn, cursor = connection()
+    cursor.execute("SELECT id_viagem FROM viagem WHERE id_viagem = %s AND id_user = %s", (id_viagem, session["usuario_id"]))
+    existe = cursor.fetchone()
+    close(conn, cursor)
+
+    if existe:
+        session["viagem"] = id_viagem
+    return redirect(url_for("routes.index"))
+
 # Mostra a página inicial
 @routes.route("/")
 def index():
@@ -152,6 +166,7 @@ def index():
     close(conn, cursor)
 
     if not viagens:
+        session.pop("viagem", None)
         return render_template(
             'index.html',
             dash={"nome": perfil[1] if perfil else "Usuário", "viagens": []},
@@ -162,9 +177,10 @@ def index():
             id_viagem=None
         )
 
-    id_viagem = request.args.get("viagem", type=int)
+    id_viagem = session.get("viagem")
     if id_viagem is None or id_viagem not in [v[0] for v in viagens]:
-        return redirect(url_for("routes.index", viagem=viagens[0][0]))
+        id_viagem = viagens[0][0]
+        session["viagem"] = id_viagem
 
     dash = getDash(id_viagem)
     meta = dash['custo'] * dash['dias']
@@ -454,7 +470,8 @@ def criar_viagem():
     nova_viagem_id = cursor.lastrowid
     close(conn, cursor)
 
-    return redirect(url_for("routes.index", viagem=nova_viagem_id))
+    session["viagem"] = nova_viagem_id
+    return redirect(url_for("routes.index"))
 
 @routes.route("/cadastrar-user", methods=['POST'])
 def cadastrar():
