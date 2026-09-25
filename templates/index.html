@@ -148,6 +148,9 @@
                         <button class="close" command="close" commandfor="add_money"><i class="fa fa-close"></i></button>
                         <h2>Nova movimentação</h2>
                         <form action="/api/movimentacao" id="movement" method="POST">
+
+                            <h3 style="margin:0">Saldo: R$ {{dash.guardado|moeda}}</h3>
+
                             <input type="hidden" name="id_viagem" value="{{ id_viagem }}">
 
                             <label for="tipo">Tipo</label>
@@ -163,9 +166,12 @@
                                 id="valor"
                                 step="0.01"
                                 min="0.01"
+                                data-saldo="{{ dash.guardado }}"
                                 placeholder="0,00"
                                 required
                             >
+
+                            <p id="movement-error" class="form-error" aria-live="polite" hidden></p>
                             <button type="submit">
                                 Adicionar
                             </button>
@@ -241,7 +247,7 @@
                 {% for viagem in dash.viagens %}
                     <div class="trip-item {% if id_viagem == viagem[0] %}active{% endif %}" data-trip-id="{{ viagem[0] }}" data-destination="{{ viagem[5] }}" data-start="{{ viagem[3].strftime('%Y-%m-%d') }}" data-end="{{ viagem[4].strftime('%Y-%m-%d') }}">
                         <a href="/?viagem={{ viagem[0] }}" class="trip-link">
-                        <span class="trip-item-name">{{ viagem[1] }}</span>
+                        <span class="trip-item-name">{{ viagem[2] }}</span>
                             <i class="ph ph-arrow-right"></i>
                         </a>
                         <div class="item-actions">
@@ -274,10 +280,10 @@
             </select>
 
             <label for="data_viagem">Data de ida</label>
-            <input type="date" id="data_viagem" name="data_viagem" required>
+            <input type="date" id="data_viagem" name="data_viagem" min="{{ hoje }}" required>
 
             <label for="data_volta">Data de volta</label>
-            <input type="date" id="data_volta" name="data_volta" required>
+            <input type="date" id="data_volta" name="data_volta" min="{{ hoje }}" required>
 
             <br>
 
@@ -351,6 +357,7 @@
                 modal.showModal();
             }
         });
+        
     </script>
     {% endif %}
 </body>

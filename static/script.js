@@ -46,12 +46,21 @@ themeButtons.forEach((button) => {
     });
 });
 
+function clearModalError(modalId) {
+    const errorBox = document.getElementById(`${modalId}-error`);
+    if (errorBox) {
+        errorBox.textContent = "";
+        errorBox.hidden = true;
+    }
+}
+
 document.querySelectorAll("[command='show-modal']").forEach((button) => {
     button.addEventListener("click", () => {
         const modalId = button.getAttribute("commandfor");
         const modal = modalId ? document.getElementById(modalId) : null;
 
         if (modal) {
+            clearModalError(modalId);
             modal.showModal();
         }
     });
@@ -91,6 +100,45 @@ if (textarea) {
             if (resposta.ok) {
                 textarea.value = "";
                 location.reload();
+            }
+        }
+    });
+}
+
+const movementForm = document.getElementById("movement");
+if (movementForm) {
+    const movementError = document.getElementById("movement-error");
+
+    movementForm.addEventListener("submit", async (event) => {
+        event.preventDefault();
+
+        if (!movementForm.reportValidity()) {
+            return;
+        }
+
+        const formData = new FormData(movementForm);
+
+        try {
+            const response = await fetch("/api/movimentacao", {
+                method: "POST",
+                body: formData
+            });
+
+            const data = await response.json().catch(() => ({}));
+
+            if (!response.ok) {
+                if (movementError) {
+                    movementError.textContent = data.erro || "Não foi possível registrar a movimentação.";
+                    movementError.hidden = false;
+                }
+                return;
+            }
+
+            window.location.reload();
+        } catch (error) {
+            if (movementError) {
+                movementError.textContent = "Erro ao registrar a movimentação.";
+                movementError.hidden = false;
             }
         }
     });
@@ -187,6 +235,36 @@ if (editTripForm) {
         }
     });
 }
+
+function bindTripDateValidation(startInputId, endInputId) {
+    const startInput = document.getElementById(startInputId);
+    const endInput = document.getElementById(endInputId);
+
+    if (!startInput || !endInput) return;
+
+    const syncMinDate = () => {
+        if (startInput.value) {
+            endInput.min = startInput.value;
+            if (endInput.value && endInput.value < startInput.value) {
+                endInput.value = startInput.value;
+            }
+        } else {
+            endInput.min = "";
+        }
+    };
+
+    startInput.addEventListener("change", syncMinDate);
+    endInput.addEventListener("change", () => {
+        if (startInput.value && endInput.value && endInput.value < startInput.value) {
+            endInput.value = startInput.value;
+        }
+    });
+
+    syncMinDate();
+}
+
+bindTripDateValidation("data_viagem", "data_volta");
+bindTripDateValidation("edit-data-viagem", "edit-data-volta");
 
 const profileForm = document.getElementById("profile-form");
 if (profileForm) {

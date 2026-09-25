@@ -177,7 +177,7 @@ def index():
     else:
         target = "Sua meta foi alcançada!"
 
-    return render_template('index.html', dash=dash, perfil=perfil, cotacao=cotacao, variacao=variacao, target=target, meta=meta, id_viagem=id_viagem, percent=percent, paises=getPaises(), has_viagens=True, no_trip=False)
+    return render_template('index.html', hoje=date.today().isoformat(), dash=dash, perfil=perfil, cotacao=cotacao, variacao=variacao, target=target, meta=meta, id_viagem=id_viagem, percent=percent, paises=getPaises(), has_viagens=True, no_trip=False)
 
 @routes.route("/login", methods=['GET', 'POST'])
 def login():
@@ -376,18 +376,42 @@ def getMovement():
 
 @routes.route("/api/movimentacao", methods=['POST'])
 def movimentacao():
-    conn, cursor= connection()
+    conn, cursor = connection()
     dados = request.form.to_dict()
+    id_viagem = dados.get('id_viagem')
+    tipo = (dados.get('tipo') or '').strip()
+    valor = dados.get('valor')
+
+    if not id_viagem or not tipo or not valor:
+        close(conn, cursor)
+        return jsonify({"sucesso": False, "erro": "Dados incompletos para registrar a movimentação."}), 400
+
+    cursor.execute("""
+    SELECT COALESCE(
+        SUM(
+            CASE
+                WHEN tipo = 'deposito' THEN valor
+                WHEN tipo = 'retirada' THEN -valor
+            END 
+        ), 0
+    ) AS total
+    FROM movimentacoes
+    WHERE id_viagem = %s
+    """, (id_viagem,))
+    guardado = float(cursor.fetchone()[0] or 0)
+
+    if tipo == 'retirada' and float(valor) > guardado:
+        close(conn, cursor)
+        return jsonify({"sucesso": False, "erro": "Valor da retirada excede o saldo disponível."}), 400
 
     cursor.execute("""
         INSERT INTO movimentacoes (id_viagem, valor, tipo) VALUES (%s, %s, %s)
-""", (dados['id_viagem'], dados['valor'], dados['tipo'],))
+    """, (id_viagem, valor, tipo))
 
     conn.commit()
-
     close(conn, cursor)
 
-    return redirect(url_for("routes.index", viagem=dados['id_viagem']))
+    return jsonify({"sucesso": True}), 200
 
 @routes.route("/api/anotacao", methods=['POST'])
 def anotacao():
@@ -416,6 +440,9 @@ def criar_viagem():
     data_volta = dados.get('data_volta')
 
     if not titulo or not destino or not data_viagem or not data_volta:
+        return redirect(url_for("routes.index"))
+
+    if data_volta < data_viagem:
         return redirect(url_for("routes.index"))
 
     conn, cursor = connection()

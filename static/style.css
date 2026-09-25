@@ -50,6 +50,7 @@ body.dark-mode {
 
 body{
     width: 100%;
+    min-height: 100vh;
     background: var(--background);
     color: var(--text);
     height: 100%;
@@ -58,6 +59,8 @@ body{
     display: flex;
     flex-direction: column;
     align-items: center;
+    overflow-x: auto;
+    overflow-y: auto;
     transition: background-color 0.25s ease, color 0.25s ease;
     padding-bottom: 2%;
 }
@@ -1059,6 +1062,18 @@ dialog button[type="button"] {
     color: var(--text);
 }
 
+.form-error {
+    margin: 0;
+    padding: .7rem .8rem;
+    border-radius: 10px;
+    background: rgb(from var(--danger) r g b / 10%);
+    border: 1px solid rgb(from var(--danger) r g b / 25%);
+    color: var(--danger);
+    font-size: .8rem;
+    font-weight: 500;
+    line-height: 1.4;
+}
+
 dialog input:invalid:not(:placeholder-shown) {
     border-color: var(--danger);
 }
@@ -1068,16 +1083,14 @@ dialog input:valid:not(:placeholder-shown) {
 }
 
 #cadastro {
-    width: min(430px, 90vw);
+    width: min(430px, calc(100vw - 2rem));
+    max-width: calc(100vw - 2rem);
     background: var(--card);
     border: 1px solid var(--border);
     border-radius: 22px;
     padding: 2rem 1.8rem 1.6rem;
     box-shadow: 0 18px 45px rgba(15, 23, 42, 0.10);
-    position: fixed;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
+    margin: 20% 
 }
 
 #cadastro h1 {
@@ -1131,19 +1144,19 @@ dialog input:valid:not(:placeholder-shown) {
 }
 
 #login {
-    width: min(430px, 90vw);
+    min-width: 430px;
+    width: 30%;
+    height: fit-content;
     background: var(--card);
     border: 1px solid var(--border);
     border-radius: 22px;
     padding: 2rem 1.8rem 1.6rem;
     box-shadow: 0 18px 45px rgba(15, 23, 42, 0.10);
-    position: fixed;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
+    margin: 0;
+    overflow-y: auto;
 }
 
-#login a{
+#login a, #cadastro a{
     color: #20639B;
 }
 
@@ -1193,14 +1206,22 @@ dialog input:valid:not(:placeholder-shown) {
     box-shadow: 0 0 0 3px rgb(from var(--accent) r g b / 15%);
 }
 
+#cadastro p {
+    font-size: medium;
+    margin-top: .5rem;
+}
+
 #cadastro {
-    width: min(430px, 90vw);
+    min-width: 430px;
+    width: 30%;
+    height: fit-content;
     background: var(--card);
     border: 1px solid var(--border);
     border-radius: 22px;
     padding: 2rem 1.8rem 1.6rem;
     box-shadow: 0 18px 45px rgba(15, 23, 42, 0.10);
-    margin: 2rem auto;
+    margin: 0;
+    overflow-y: auto;
 }
 
 #cadastro h1 {
@@ -1400,6 +1421,7 @@ dialog input:valid:not(:placeholder-shown) {
 
     body {
         overflow-x: hidden;
+        overflow-y: auto;
         padding-bottom: calc(1rem + env(safe-area-inset-bottom));
     }
 
@@ -1838,11 +1860,15 @@ dialog input:valid:not(:placeholder-shown) {
     /* Login/cadastro */
     #login,
     #cadastro {
-        position: static;
-        width: calc(100% - 1rem);
-        margin: .75rem auto;
+        position: relative;
+        top: auto;
+        left: auto;
+        width: min(430px, calc(100% - 1rem));
+        max-width: calc(100% - 1rem);
+        margin: .75rem auto 2rem;
         padding: 1.35rem 1rem 1rem;
         transform: none;
+        box-sizing: border-box;
     }
 
     #login h1,

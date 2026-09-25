@@ -9,9 +9,9 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/lipis/flag-icons@7.3.2/css/flag-icons.min.css"/>
     <script src="https://kit.fontawesome.com/a3a9f84800.js" crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <title>Login</title>
+    <title>Cadastro</title>
 </head>
-<body>
+<body style="display: flex; justify-content: center; align-items: center; height: 100vh;">
     <section id="cadastro">
         <h1>Cadastro</h1>
         {% if erro %}
@@ -31,7 +31,9 @@
                 <input type="checkbox" id="aceita_termos" name="aceita_termos" required>
                 <span>Concordo com o tratamento dos meus dados e com a política de privacidade/LGPD.</span>
             </label>
-
+            <label class="login">
+                <p>Já possui uma conta? <a href="{{ url_for('routes.login') }}">Clique aqui.</a></p>
+            </label>
             <div id="botoes">
                 <button class="btn" id="login-btn" type="submit">Criar conta</button>
                 <button class="btn" id="login-theme-btn" type="button"><i id="theme-icon" class="fas fa-moon"></i></button>
