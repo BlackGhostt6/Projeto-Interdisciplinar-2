@@ -235,6 +235,7 @@ def login():
                         conn.commit()
                         close(conn, cursor)
 
+                    session.permanent = True
                     session['usuario_id'] = usuario_db[0]
                     session['usuario_nome'] = usuario_db[1]
                     return redirect(url_for('routes.index'))
@@ -505,6 +506,7 @@ def cadastrar():
     novo_user_id = cursor.lastrowid
     close(conn, cursor)  
 
+    session.permanent = True
     session['usuario_id'] = novo_user_id
     session['usuario_nome'] = nome
     return redirect(url_for('routes.index'))
