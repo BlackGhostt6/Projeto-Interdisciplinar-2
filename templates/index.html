@@ -149,7 +149,7 @@
                         <h2>Nova movimentação</h2>
                         <form action="/api/movimentacao" id="movement" method="POST">
 
-                            <h3 style="margin:0">Saldo: R$ {{dash.guardado|moeda}}</h3>
+                            <h4 style="margin:0; font-weight: bold;">Saldo atual: R$ {{dash.guardado|moeda}}</h4>
 
                             <input type="hidden" name="id_viagem" value="{{ id_viagem }}">
 
@@ -170,10 +170,10 @@
                                 placeholder="0,00"
                                 required
                             >
-
                             <p id="movement-error" class="form-error" aria-live="polite" hidden></p>
+                        </br>
                             <button type="submit">
-                                Adicionar
+                                Registrar movimentação
                             </button>
                         </form>
                     </dialog>
