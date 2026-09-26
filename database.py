@@ -22,8 +22,8 @@ def connection():
     cursor = conn.cursor(buffered=True)
     return conn, cursor
 
-def close(cursor, conn):
+def close(conn, cursor):
     if cursor:
-            cursor.close()
+        cursor.close()
     if conn:
         conn.close()

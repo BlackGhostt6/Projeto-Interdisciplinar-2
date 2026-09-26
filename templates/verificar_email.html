@@ -3,8 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="robots" content="noindex, nofollow">
+    <meta name="description" content="Verificação de conta do PlannerTrip para concluir o cadastro ou redefinir a senha.">
+    <meta property="og:title" content="Verificar e-mail | PlannerTrip">
+    <meta property="og:description" content="Confirme seu e-mail para ativar sua conta e continuar o planejamento da sua viagem.">
+    <meta property="og:type" content="website">
+    <meta property="twitter:card" content="summary">
+    <link rel="canonical" href="{{ request.url_root }}verificar-email">
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-    <title>Verificar e-mail</title>
+    <title>Verificar e-mail | PlannerTrip</title>
 </head>
 <body style="display: flex; justify-content: center; align-items: center; height: 100vh;">
     <section id="cadastro" style="min-width: 420px; width: min(420px, calc(100vw - 2rem));">
@@ -14,6 +21,8 @@
             <p class="erro-msg">{{ erro }}</p>
         {% endif %}
 
+        <div id="form-toast" class="toast" aria-live="polite"></div>
+
         <p style="margin: 0 0 1rem; color: var(--text-secondary);">
             Enviamos um código de 6 dígitos para <strong>{{ email }}</strong>.
             Ele expira em 5 minutos.
@@ -21,9 +30,10 @@
 
         <form method="POST" action="{{ url_for('routes.verificar_email') }}">
             <input type="hidden" name="email" value="{{ email }}">
+            <input type="hidden" name="acao" value="{{ acao or 'cadastro' }}">
 
             <label for="codigo">Código de confirmação</label>
-            <input type="text" id="codigo" name="codigo" maxlength="6" placeholder="Digite o código de 6 dígitos" required>
+            <input type="text" id="codigo" name="codigo" maxlength="6" placeholder="Digite o código de 6 dígitos">
 
             <div id="botoes" style="grid-template-columns: 1fr; margin-top: 1rem;">
                 <button class="btn" id="login-btn" type="submit">Confirmar cadastro</button>
@@ -32,6 +42,7 @@
 
         <form method="POST" action="{{ url_for('routes.reenviar_codigo') }}" style="margin-top: 1rem;">
             <input type="hidden" name="email" value="{{ email }}">
+            <input type="hidden" name="acao" value="{{ acao or 'cadastro' }}">
             <button type="submit" class="btn" style="width: 100%; background: var(--card-btn); color: var(--text); border: 1px solid var(--border);">
                 Enviar outro código
             </button>

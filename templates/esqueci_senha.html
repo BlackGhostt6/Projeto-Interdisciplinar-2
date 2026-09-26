@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="robots" content="noindex, nofollow">
+    <meta name="description" content="Recupere o acesso à sua conta do PlannerTrip enviando um código de verificação para o seu e-mail.">
+    <meta property="og:title" content="Recuperar senha | PlannerTrip">
+    <meta property="og:description" content="Solicite a redefinição da sua senha e retome o controle das suas viagens.">
+    <meta property="og:type" content="website">
+    <meta property="twitter:card" content="summary">
+    <link rel="canonical" href="{{ request.url_root }}esqueci-senha">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="shortcut icon" href="{{ url_for('static', filename='img/fav.png') }}" type="image/x-png">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@phosphor-icons/web@2.1.2/src/regular/style.css">
+    <script src="https://kit.fontawesome.com/a3a9f84800.js" crossorigin="anonymous"></script>
+    <title>Recuperar senha | PlannerTrip</title>
+</head>
+<body style="display: flex; justify-content: center; align-items: center; height: 100vh;">
+    <section id="cadastro" style="min-width: 420px; width: min(420px, calc(100vw - 2rem));">
+        <h1>Recuperar senha</h1>
+        {% if erro %}
+            <p class="erro-msg">{{ erro }}</p>
+        {% endif %}
+
+        <form method="POST" action="{{ url_for('routes.esqueci_senha') }}">
+            <label for="email">E-mail cadastrado</label>
+            <input type="email" id="email" name="email" value="{{ email or '' }}" placeholder="Digite seu e-mail" autocomplete="off">
+
+            <div id="botoes" style="grid-template-columns: 1fr; margin-top: 1rem;">
+                <button class="btn" id="login-btn" type="submit">Enviar código</button>
+            </div>
+        </form>
+
+        <p style="margin-top: 1rem;">
+            <a href="{{ url_for('routes.login') }}">Voltar ao login</a>
+        </p>
+    </section>
+<script src="{{ url_for('static', filename='script.js') }}"></script>
+</body>
+</html>

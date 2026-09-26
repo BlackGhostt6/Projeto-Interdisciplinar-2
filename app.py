@@ -6,6 +6,12 @@ from utils.currency import moeda, moeda_cotacao
 
 app = Flask(__name__)
 app.secret_key = os.environ.get("SECRET_KEY", "tripplan-secret-key")
+app.config["SITE_NAME"] = os.environ.get("SITE_NAME", "PlannerTrip")
+app.config["SITE_URL"] = os.environ.get("SITE_URL", "https://seu-dominio.com")
+app.config["SITE_DESCRIPTION"] = os.environ.get(
+    "SITE_DESCRIPTION",
+    "Planeje sua viagem com metas financeiras, organização de datas, anotações e controle de orçamento em um só lugar."
+)
 
 from controller.routes import routes
 app.register_blueprint(routes)

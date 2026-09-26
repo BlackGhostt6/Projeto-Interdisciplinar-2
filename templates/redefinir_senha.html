@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="robots" content="noindex, nofollow">
+    <meta name="description" content="Defina uma nova senha para acessar sua conta do PlannerTrip.">
+    <meta property="og:title" content="Nova senha | PlannerTrip">
+    <meta property="og:description" content="Crie uma nova senha segura e continue usando o PlannerTrip.">
+    <meta property="og:type" content="website">
+    <meta property="twitter:card" content="summary">
+    <link rel="canonical" href="{{ request.url_root }}redefinir-senha">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="shortcut icon" href="{{ url_for('static', filename='img/fav.png') }}" type="image/x-png">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@phosphor-icons/web@2.1.2/src/regular/style.css">
+    <script src="https://kit.fontawesome.com/a3a9f84800.js" crossorigin="anonymous"></script>
+    <title>Nova senha | PlannerTrip</title>
+</head>
+<body style="display: flex; justify-content: center; align-items: center; height: 100vh;">
+    <section id="cadastro" style="min-width: 420px; width: min(420px, calc(100vw - 2rem));">
+        <h1>Definir nova senha</h1>
+        {% if erro %}
+            <p class="erro-msg">{{ erro }}</p>
+        {% endif %}
+
+        <form method="POST" action="{{ url_for('routes.redefinir_senha') }}">
+            <input type="hidden" name="email" value="{{ email or '' }}">
+
+            <label for="nova_senha">Nova senha</label>
+            <div class="senha-container">
+                <input type="password" id="nova_senha" name="nova_senha" placeholder="Digite a nova senha">
+                <button type="button" class="toggle-senha" aria-label="Mostrar senha"><i class="ph ph-eye"></i></button>
+            </div>
+
+            <label for="confirmar_senha">Confirmar senha</label>
+            <div class="senha-container">
+                <input type="password" id="confirmar_senha" name="confirmar_senha" placeholder="Confirme a nova senha">
+                <button type="button" class="toggle-senha" aria-label="Mostrar senha"><i class="ph ph-eye"></i></button>
+            </div>
+
+            <div id="botoes" style="grid-template-columns: 1fr; margin-top: 1rem;">
+                <button class="btn" id="login-btn" type="submit">Salvar nova senha</button>
+            </div>
+        </form>
+    </section>
+<script src="{{ url_for('static', filename='script.js') }}"></script>
+<script>
+    document.querySelectorAll('.toggle-senha').forEach((button) => {
+        button.addEventListener('click', () => {
+            const input = button.parentElement.querySelector('input');
+            const visible = input.type === 'text';
+            input.type = visible ? 'password' : 'text';
+            button.innerHTML = visible ? '<i class="ph ph-eye"></i>' : '<i class="ph ph-eye-slash"></i>';
+        });
+    });
+</script>
+</body>
+</html>

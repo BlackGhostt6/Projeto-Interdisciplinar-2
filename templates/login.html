@@ -3,13 +3,26 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="robots" content="index, follow">
+    <meta name="description" content="Faça login no PlannerTrip para organizar sua viagem, controlar a meta financeira e acompanhar anotações em um só lugar.">
+    <meta name="theme-color" content="#0f172a">
+    <meta property="og:title" content="Login | PlannerTrip">
+    <meta property="og:description" content="Acesse sua conta e continue planejando sua próxima viagem com organização e controle financeiro.">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="{{ request.url_root }}login">
+    <meta property="og:image" content="{{ request.url_root }}static/img/logo.png">
+    <meta property="twitter:card" content="summary_large_image">
+    <meta property="twitter:title" content="Login | PlannerTrip">
+    <meta property="twitter:description" content="Acesse sua conta e continue planejando sua próxima viagem com organização e controle financeiro.">
+    <meta property="twitter:image" content="{{ request.url_root }}static/img/logo.png">
+    <link rel="canonical" href="{{ request.url_root }}login">
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
     <link rel="shortcut icon" href="{{ url_for('static', filename='img/fav.png') }}" type="image/x-png">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@phosphor-icons/web@2.1.2/src/regular/style.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/lipis/flag-icons@7.3.2/css/flag-icons.min.css"/>
     <script src="https://kit.fontawesome.com/a3a9f84800.js" crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <title>Login</title>
+    <title>Login | PlannerTrip</title>
 </head>
 <body style="display: flex; justify-content: center; align-items: center; height: 100vh;">
     <section id="login">
@@ -28,8 +41,11 @@
                         <i class="ph ph-eye"></i>
                     </button>
                 </div>
-            <br>    
-            <p>Não possui uma conta? <a href="{{ url_for('routes.cadastro') }}">Clique aqui.</a></p>
+                <p style="margin: 0;">
+                    <a href="{{ url_for('routes.esqueci_senha') }}">Esqueci minha senha</a>
+                </p>
+                <p>Não possui uma conta? <a href="{{ url_for('routes.cadastro') }}">Clique aqui.</a></p>
+                
             <div id="botoes">
                 <button class="btn" id="login-btn" type="submit">Login</button>
                 <button class="btn" id="login-theme-btn" type="button"><i id="theme-icon" class="fas fa-moon"></i></button>

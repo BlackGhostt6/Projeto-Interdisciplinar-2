@@ -1,54 +1,53 @@
 const themeButtons = document.querySelectorAll("#theme-toggle-btn, #login-theme-btn");
 
+function showToast(message, type = "success") {
+    const toast = document.getElementById("form-toast");
+    if (!toast) return;
+    toast.textContent = message;
+    toast.className = `toast show ${type}`;
+    clearTimeout(showToast.timeoutId);
+    showToast.timeoutId = setTimeout(() => {
+        toast.className = "toast";
+    }, 3500);
+}
+
+function setSubmitLoading(button, isLoading, text = "Continuar") {
+    if (!button) return;
+    button.disabled = isLoading;
+    button.dataset.originalText = button.dataset.originalText || button.textContent.trim();
+    button.textContent = isLoading ? "Enviando..." : button.dataset.originalText;
+}
+
 const cadastroForm = document.getElementById("cadastro-form");
-const emailInput = document.getElementById("email");
-const enviarCodigoBtn = document.getElementById("enviar-codigo-btn");
-const codigoVerificacaoRow = document.getElementById("codigo-verificacao-row");
-const codigoInput = document.getElementById("codigo_verificacao");
-const validarCodigoBtn = document.getElementById("validar-codigo-btn");
-const submitBtn = document.getElementById("login-btn");
 
-let codigoValidado = false;
+if (cadastroForm) {
+    cadastroForm.addEventListener("submit", async (event) => {
+        event.preventDefault();
 
-function atualizarBotaoCadastro() {
-    if (!submitBtn) return;
-    submitBtn.disabled = !codigoValidado;
-    submitBtn.style.opacity = codigoValidado ? "1" : "0.6";
-    submitBtn.style.cursor = codigoValidado ? "pointer" : "not-allowed";
-}
-
-function resetCodigo() {
-    codigoValidado = false;
-    atualizarBotaoCadastro();
-}
-
-if (cadastroForm && emailInput && enviarCodigoBtn && codigoVerificacaoRow && codigoInput && validarCodigoBtn && submitBtn) {
-    atualizarBotaoCadastro();
-
-    emailInput.addEventListener("input", () => {
-        resetCodigo();
-    });
-
-    codigoInput.addEventListener("input", () => {
-        resetCodigo();
-    });
-
-    enviarCodigoBtn.addEventListener("click", async () => {
+        const submitButton = cadastroForm.querySelector('button[type="submit"]');
         const nome = document.getElementById("nome")?.value.trim();
         const username = document.getElementById("username")?.value.trim();
-        const email = emailInput.value.trim();
+        const email = document.getElementById("email")?.value.trim();
         const senha = document.getElementById("senha")?.value;
         const aceitaTermos = document.getElementById("aceita_termos")?.checked;
 
         if (!nome || !username || !email || !senha) {
-            alert("Preencha nome, usuário, e-mail e senha antes de enviar o código.");
+            showToast("Preencha nome, usuário, e-mail e senha antes de continuar.", "error");
+            return;
+        }
+
+        if (senha.length < 6) {
+            showToast("A senha deve ter pelo menos 6 caracteres.", "error");
             return;
         }
 
         if (!aceitaTermos) {
-            alert("Você precisa aceitar os termos antes de continuar.");
+            showToast("Você precisa aceitar os termos antes de continuar.", "error");
             return;
         }
+
+        setSubmitLoading(submitButton, true);
+        showToast("Enviando o código de verificação...", "success");
 
         const formData = new FormData(cadastroForm);
 
@@ -61,59 +60,23 @@ if (cadastroForm && emailInput && enviarCodigoBtn && codigoVerificacaoRow && cod
             const data = await response.json().catch(() => ({}));
 
             if (!response.ok) {
-                alert(data.erro || "Não foi possível enviar o código.");
+                setSubmitLoading(submitButton, false);
+                showToast(data.erro || "Não foi possível enviar o código.", "error");
                 return;
             }
 
-            codigoVerificacaoRow.hidden = false;
-            codigoInput.focus();
-            resetCodigo();
-            alert("Código enviado para o e-mail informado.");
-        } catch (error) {
-            alert("Erro ao enviar o código. Tente novamente.");
-        }
-    });
-
-    validarCodigoBtn.addEventListener("click", async () => {
-        const email = emailInput.value.trim();
-        const codigo = codigoInput.value.trim();
-
-        if (!email || !codigo) {
-            alert("Informe o e-mail e o código antes de validar.");
-            return;
-        }
-
-        const formData = new FormData();
-        formData.append("email", email);
-        formData.append("codigo", codigo);
-
-        try {
-            const response = await fetch("/api/cadastro/verificar-codigo", {
-                method: "POST",
-                body: formData
-            });
-
-            const data = await response.json().catch(() => ({}));
-
-            if (!response.ok) {
-                alert(data.erro || "Código inválido.");
-                resetCodigo();
-                return;
+            if (data.codigo_teste) {
+                showToast(`Código de teste: ${data.codigo_teste}`, "success");
+            } else {
+                showToast("Código enviado com sucesso. Agora confirme o e-mail.", "success");
             }
 
-            codigoValidado = true;
-            atualizarBotaoCadastro();
-            codigoInput.setAttribute("readonly", "readonly");
-            alert("Código validado com sucesso! Agora você pode criar a conta.");
+            setTimeout(() => {
+                window.location.href = `/verificar-email?email=${encodeURIComponent(email)}`;
+            }, 1800);
         } catch (error) {
-            alert("Erro ao validar o código. Tente novamente.");
-        }
-    });
-
-    cadastroForm.addEventListener("submit", (event) => {
-        if (!codigoValidado) {
-            event.preventDefault();
-            alert("Valide o código antes de criar a conta.");
+            setSubmitLoading(submitButton, false);
+            showToast("Erro ao enviar o código. Tente novamente.", "error");
         }
     });
 }
@@ -411,6 +374,15 @@ if (deleteAccountButton) {
         } catch (error) {
             alert(error.message);
         }
+    });
+}
+
+const changePasswordButton = document.getElementById("change-password-btn");
+if (changePasswordButton) {
+    changePasswordButton.addEventListener("click", () => {
+        const email = changePasswordButton.dataset.userEmail;
+        if (!email) return;
+        window.location.href = `/esqueci-senha?email=${encodeURIComponent(email)}`;
     });
 }
 

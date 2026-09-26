@@ -53,7 +53,7 @@ def send_verification_email(email, code):
     if not smtp_host:
         if smtp_mock:
             print(f"[SMTP MOCK] Código para {email}: {code}")
-            return
+            return True
         raise ValueError('SMTP não configurado. Defina SMTP_HOST, SMTP_PORT, SMTP_USERNAME e SMTP_PASSWORD no arquivo .env.')
 
     message = MIMEText(
@@ -62,7 +62,7 @@ def send_verification_email(email, code):
         'utf-8'
     )
     message['Subject'] = 'Código de verificação - TripPlan'
-    message['From'] = smtp_user or 'noreply@tripplan.local'
+    message['From'] = smtp_user or 'contato.gabriel276@gmail.com'
     message['To'] = email
 
     try:
@@ -78,11 +78,17 @@ def send_verification_email(email, code):
                 if smtp_user and smtp_password:
                     server.login(smtp_user, smtp_password)
                 server.sendmail(message['From'], [email], message.as_string())
+        return True
     except Exception as exc:
+        if smtp_mock:
+            print(f"[SMTP MOCK] Código para {email}: {code}")
+            return True
         raise ValueError(f'Falha no envio do e-mail via SMTP: {exc}') from exc
 
 
 def create_verification_code(email, payload):
+    global PENDING_USERS
+
     normalized_email = normalize_email(email)
 
     if not can_send_new_code(normalized_email):
@@ -94,12 +100,14 @@ def create_verification_code(email, payload):
 
     code = f'{random.randint(100000, 999999):06d}'
     created_at = datetime.now()
+
     pending_data = {
         'email': normalized_email,
-        'nome': payload['nome'],
-        'username': payload['username'],
-        'senha': payload['senha'],
+        'nome': payload.get('nome', ''),
+        'username': payload.get('username', ''),
+        'senha': payload.get('senha', ''),
         'aceita_termos': payload.get('aceita_termos', True),
+        'tipo': payload.get('tipo', 'cadastro'),
         'codigo': code,
         'criado_em': created_at,
         'expira_em': created_at + timedelta(minutes=5),
@@ -113,8 +121,13 @@ def create_verification_code(email, payload):
     try:
         send_verification_email(normalized_email, code)
     except Exception as exc:
-        PENDING_USERS = [item for item in PENDING_USERS if item['email'] != normalized_email]
-        raise ValueError(f'Não foi possível enviar o e-mail de verificação: {exc}')
+        PENDING_USERS = [
+            item for item in PENDING_USERS
+            if item['email'] != normalized_email
+        ]
+        raise ValueError(
+            f'Não foi possível enviar o e-mail de verificação: {exc}'
+        )
 
     return pending_data
 
@@ -128,8 +141,30 @@ def clear_expired_pending_users():
 
 @routes.before_request
 def require_login():
-    public_routes = {"routes.login", "routes.cadastro", "routes.verificar_email", "routes.reenviar_codigo", "routes.cadastrar", "static"}
-    if request.endpoint in public_routes:
+    public_routes = {
+        "routes.login",
+        "routes.cadastro",
+        "routes.verificar_email",
+        "routes.reenviar_codigo",
+        "routes.cadastrar",
+        "routes.api_enviar_codigo",
+        "routes.api_verificar_codigo",
+        "routes.esqueci_senha",
+        "routes.redefinir_senha",
+        "routes.trocar_senha",
+        "static"
+    }
+    public_paths = {
+        "/login",
+        "/cadastro",
+        "/verificar-email",
+        "/esqueci-senha",
+        "/redefinir-senha",
+        "/politica-de-privacidade",
+        "/logout"
+    }
+
+    if request.endpoint in public_routes or request.path in public_paths:
         return None
 
     if "usuario_id" not in session:
@@ -150,99 +185,105 @@ def getDash(id):
     user = session["usuario_id"]
 
     cursor.execute("""
-    SELECT v.id_viagem, p.pais, v.titulo, v.data_viagem, v.data_volta, v.id_destino
-    FROM viagem AS v
-    INNER JOIN paises AS p ON v.id_destino = p.id_pais
-    WHERE v.id_user = %s
-    ORDER BY v.id_viagem ASC;
+        SELECT
+            v.id_viagem,
+            p.pais,
+            v.titulo,
+            v.data_viagem,
+            v.data_volta,
+            v.id_destino,
+            p.sigla,
+            p.imagem,
+            p.cust_med,
+            p.cod_moeda,
+            p.simbolo,
+            u.nome,
+            DATEDIFF(v.data_viagem, CURDATE()) AS dias_restantes,
+            (
+                SELECT COALESCE(SUM(
+                    CASE
+                        WHEN tipo = 'deposito' THEN valor
+                        WHEN tipo = 'retirada' THEN -valor
+                    END
+                ), 0)
+                FROM movimentacoes
+                WHERE id_viagem = v.id_viagem
+            ) AS guardado,
+            (
+                SELECT COALESCE(SUM(
+                    CASE
+                        WHEN tipo = 'deposito' THEN valor
+                        WHEN tipo = 'retirada' THEN -valor
+                    END
+                ), 0)
+                FROM movimentacoes
+                WHERE data_move >= DATE_SUB(CURDATE(), INTERVAL 1 MONTH)
+                  AND id_viagem = v.id_viagem
+            ) AS ultimo_mes,
+            DATEDIFF(v.data_volta, v.data_viagem) AS dias,
+            v.data_viagem AS ida,
+            v.data_volta AS volta
+        FROM viagem AS v
+        INNER JOIN paises AS p ON v.id_destino = p.id_pais
+        INNER JOIN usuarios AS u ON u.id_user = v.id_user
+        WHERE v.id_viagem = %s AND v.id_user = %s
+    """, (id, user))
+    viagem = cursor.fetchone()
+
+    cursor.execute("""
+        SELECT id_nota, anotacao
+        FROM anotacoes
+        WHERE id_viagem = %s
+        ORDER BY id_nota DESC
+    """, (id,))
+    notas = cursor.fetchall()
+
+    cursor.execute("""
+        SELECT v.id_viagem, p.pais, v.titulo, v.data_viagem, v.data_volta, v.id_destino
+        FROM viagem AS v
+        INNER JOIN paises AS p ON v.id_destino = p.id_pais
+        WHERE v.id_user = %s
+        ORDER BY v.id_viagem ASC
     """, (user,))
-    viagens =cursor.fetchall()
-    
-    cursor.execute("""SELECT DATEDIFF(data_viagem, CURDATE()) AS dias_restantes
-    FROM viagem
-    WHERE id_viagem = %s;""",(id,))
-    dias_restantes =cursor.fetchone()[0]
-
-    cursor.execute("select id_nota, anotacao from anotacoes where id_viagem = %s ORDER BY id_nota DESC;", (id,))
-    notas = cursor.fetchall()  
-
-    cursor.execute("select v.id_destino, p.pais from viagem as v inner join paises as p on v.id_destino = p.id_pais  where id_viagem = %s ", (id,))
-    pais = cursor.fetchone()[1]
-
-    cursor.execute("select v.id_destino, p.sigla from viagem v inner join paises p on v.id_destino = p.id_pais where pais = %s", (pais,))
-    sigla=cursor.fetchone()[1]
-
-    cursor.execute("select v.id_destino, p.imagem from viagem as v inner join paises as p on v.id_destino = p.id_pais  where id_viagem = %s ", (id,))
-    imagem = cursor.fetchone()[1]
-
-    cursor.execute("""
-    select cust_med from paises where pais = %s
-""", (pais,))
-    custo = cursor.fetchone()[0]
-
-    cursor.execute("""
-    select pais, cod_moeda, simbolo
-        from paises
-        where pais = %s
-""", (pais,))
-    destino = cursor.fetchone() 
-
-    cursor.execute("""
-    SELECT COALESCE(
-        SUM(
-            CASE
-                WHEN tipo = 'deposito' THEN valor
-                WHEN tipo = 'retirada' THEN -valor
-            END 
-        ), 0
-    ) AS total
-    FROM movimentacoes
-    WHERE id_viagem = %s
-""", (id,))
-    guardado = cursor.fetchone()[0]
-
-    cursor.execute("""
-    SELECT COALESCE(
-        SUM(
-            CASE
-                WHEN tipo = 'deposito' THEN valor
-                WHEN tipo = 'retirada' THEN -valor
-                ELSE 0
-            END
-        ), 0
-    ) AS qtd
-    FROM movimentacoes
-    WHERE data_move >= DATE_SUB(CURDATE(), INTERVAL 1 MONTH)
-      AND id_viagem = %s
-""", (id,))
-    ultimo_mes = cursor.fetchone()[0]
-
-    cursor.execute("""
-    SELECT DATEDIFF(data_volta, data_viagem), data_viagem, data_volta
-    FROM viagem where id_viagem = %s;
-""", (id,))
-
-    datas=cursor.fetchone()
-
-    cursor.execute("SELECT nome FROM usuarios WHERE id_user = %s", (user,))
-    nome = cursor.fetchone()[0]
+    viagens = cursor.fetchall()
 
     close(conn, cursor)
+
+    if not viagem:
+        return {
+            "custo": 0,
+            "origem": "Brasil",
+            "destino": "",
+            "guardado": 0,
+            "imagem": "",
+            "sigla": "",
+            "nome": "Usuário",
+            "cotacao": "BRL",
+            "simbolo": "R$",
+            "dias": 0,
+            "ida": None,
+            "volta": None,
+            "ultimo_mes": 0,
+            "dias_restantes": 0,
+            "notas": notas,
+            "viagens": viagens
+        }
+
     return {
-        "custo": custo,
+        "custo": viagem[8],
         "origem": "Brasil",
-        "destino": destino[0],
-        "guardado": guardado,
-        "imagem": imagem,
-        "sigla": sigla,
-        "nome": nome,
-        "cotacao": destino[1],
-        "simbolo" : destino[2],
-        "dias": datas[0],
-        "ida": datas[1],
-        "volta": datas[2],
-        "ultimo_mes": ultimo_mes,
-        "dias_restantes": dias_restantes,
+        "destino": viagem[1],
+        "guardado": float(viagem[13] or 0),
+        "imagem": viagem[7],
+        "sigla": viagem[6],
+        "nome": viagem[11],
+        "cotacao": viagem[9],
+        "simbolo": viagem[10],
+        "dias": viagem[15],
+        "ida": viagem[16],
+        "volta": viagem[17],
+        "ultimo_mes": float(viagem[14] or 0),
+        "dias_restantes": viagem[12],
         "notas": notas,
         "viagens": viagens
     }
@@ -301,13 +342,17 @@ def index():
 
     dash = getDash(id_viagem)
     cotacao = get_cotacao(dash['cotacao'], "brl")
-    valor_diario_em_brl = (Decimal(str(cotacao)) * dash['custo']) if cotacao is not None else dash['custo']
-    meta = valor_diario_em_brl * dash['dias']
-    percent = round((dash['guardado'] / meta) * 100, 1) if meta else 0
+    custo_decimal = Decimal(str(dash.get('custo') or 0))
+    guardado_decimal = Decimal(str(dash.get('guardado') or 0))
+    dias_decimal = Decimal(str(dash.get('dias') or 0))
+
+    valor_diario_em_brl = (Decimal(str(cotacao)) * custo_decimal) if cotacao is not None else custo_decimal
+    meta = valor_diario_em_brl * dias_decimal
+    percent = round((guardado_decimal / meta * Decimal('100')), 1) if meta else 0
     variacao = get_variacao_cotacao(dash['cotacao'], "brl")
 
-    if dash['guardado'] < meta:
-        target = f"Faltam R${moeda(meta - dash['guardado'])} para sua meta"
+    if guardado_decimal < meta:
+        target = f"Faltam R${moeda(meta - guardado_decimal)} para sua meta"
     else:
         target = "Sua meta foi alcançada!"
 
@@ -366,6 +411,10 @@ def logout():
     session.clear()
     return redirect(url_for("routes.login"))
 
+@routes.route("/politica-de-privacidade")
+def politica_privacidade():
+    return render_template('politica_privacidade.html')
+
 @routes.route("/cadastro")
 def cadastro():
     session.pop('cadastro_validado', None)
@@ -384,8 +433,17 @@ def api_enviar_codigo():
     if not nome or not email or not senha or not username:
         return jsonify({'sucesso': False, 'erro': 'Preencha nome, usuário, e-mail e senha.'}), 400
 
+    if len(senha) < 6:
+        return jsonify({'sucesso': False, 'erro': 'A senha deve ter pelo menos 6 caracteres.'}), 400
+
+    if not re.fullmatch(r'[^@\s]+@[^@\s]+\.[^@\s]+', email):
+        return jsonify({'sucesso': False, 'erro': 'Informe um e-mail válido.'}), 400
+
+    if len(username) < 3:
+        return jsonify({'sucesso': False, 'erro': 'O usuário deve ter pelo menos 3 caracteres.'}), 400
+
     if not aceita_termos:
-        return jsonify({'sucesso': False, 'erro': 'Você precisa aceitar os termos de uso e LGPD para continuar.'}), 400
+        return jsonify({'sucesso': False, 'erro': 'Você precisa aceitar os termos de uso e LGPD.'}), 400
 
     conn, cursor = connection()
     cursor.execute("SELECT id_user FROM usuarios WHERE email = %s OR username = %s LIMIT 1", (email, username))
@@ -407,16 +465,23 @@ def api_enviar_codigo():
 
     session['pending_email'] = pending['email']
     session.pop('cadastro_validado', None)
-    return jsonify({'sucesso': True, 'email': pending['email']})
+    payload = {'sucesso': True, 'email': pending['email']}
+    if os.getenv('SMTP_MOCK', 'false').lower() == 'true':
+        payload['codigo_teste'] = pending['codigo']
+    return jsonify(payload)
 
 
 @routes.route('/api/cadastro/verificar-codigo', methods=['POST'])
 def api_verificar_codigo():
+    global PENDING_USERS
     email = normalize_email(request.form.get('email'))
     codigo = (request.form.get('codigo') or '').strip()
 
     if not email or not codigo:
         return jsonify({'sucesso': False, 'erro': 'Informe o e-mail e o código.'}), 400
+
+    if not re.fullmatch(r'^[0-9]{6}$', codigo):
+        return jsonify({'sucesso': False, 'erro': 'O código deve conter exatamente 6 dígitos.'}), 400
 
     clear_expired_pending_users()
     pending = next((item for item in PENDING_USERS if item['email'] == email), None)
@@ -638,13 +703,19 @@ def criar_viagem():
     dados = request.form.to_dict()
     titulo = (dados.get('titulo') or '').strip()
     destino = dados.get('destino')
-    data_viagem = dados.get('data_viagem')
-    data_volta = dados.get('data_volta')
+    data_viagem = (dados.get('data_viagem') or '').strip()
+    data_volta = (dados.get('data_volta') or '').strip()
 
     if not titulo or not destino or not data_viagem or not data_volta:
         return redirect(url_for("routes.index"))
 
-    if data_volta < data_viagem:
+    try:
+        ida = date.fromisoformat(data_viagem)
+        volta = date.fromisoformat(data_volta)
+    except ValueError:
+        return redirect(url_for("routes.index"))
+
+    if ida < date.today() or volta < ida:
         return redirect(url_for("routes.index"))
 
     conn, cursor = connection()
@@ -661,6 +732,7 @@ def criar_viagem():
 
 @routes.route("/cadastrar-user", methods=['POST'])
 def cadastrar():
+    global PENDING_USERS
     dados = request.form.to_dict()
     nome = (dados.get('nome') or '').strip()
     username = (dados.get('username') or '').strip()
@@ -709,13 +781,19 @@ def cadastrar():
 
 @routes.route('/verificar-email', methods=['GET', 'POST'])
 def verificar_email():
+    global PENDING_USERS
     email = normalize_email(request.form.get('email') or request.args.get('email') or session.get('pending_email'))
+    acao = (request.form.get('acao') or request.args.get('acao') or 'cadastro').strip().lower()
+
     if request.method == 'GET':
-        return render_template('verificar_email.html', email=email, erro=None)
+        return render_template('verificar_email.html', email=email, erro=None, acao=acao)
 
     codigo = (request.form.get('codigo') or '').strip()
     if not email or not codigo:
-        return render_template('verificar_email.html', email=email, erro='Informe o e-mail e o código recebido.')
+        return render_template('verificar_email.html', email=email, erro='Informe o e-mail e o código recebido.', acao=acao)
+
+    if not re.fullmatch(r'^[0-9]{6}$', codigo):
+        return render_template('verificar_email.html', email=email, erro='O código deve conter exatamente 6 dígitos.', acao=acao)
 
     clear_expired_pending_users()
     pending = next((item for item in PENDING_USERS if item['email'] == email), None)
@@ -730,7 +808,14 @@ def verificar_email():
         return render_template('cadastro.html', erro='O código expirou. Solicite um novo código.')
 
     if codigo != pending['codigo']:
-        return render_template('verificar_email.html', email=email, erro='Código inválido. Verifique o e-mail e tente novamente.')
+        return render_template('verificar_email.html', email=email, erro='Código inválido. Verifique o e-mail e tente novamente.', acao=acao)
+
+    session['pending_email'] = email
+
+    if acao in {'reset_senha', 'trocar_senha'}:
+        session['reset_email'] = email
+        PENDING_USERS = [item for item in PENDING_USERS if item['email'] != email]
+        return redirect(url_for('routes.redefinir_senha'))
 
     conn, cursor = connection()
     cursor.execute("SELECT id_user FROM usuarios WHERE email = %s OR username = %s LIMIT 1", (pending['email'], pending['username']))
@@ -760,20 +845,22 @@ def verificar_email():
 
 @routes.route('/reenviar-codigo', methods=['POST'])
 def reenviar_codigo():
+    global PENDING_USERS
     email = normalize_email(request.form.get('email'))
+    acao = (request.form.get('acao') or 'cadastro').strip().lower()
     if not email:
         return render_template('cadastro.html', erro='E-mail não informado.')
 
     pending = next((item for item in PENDING_USERS if item['email'] == email), None)
     if pending and datetime.now() < pending['expira_em']:
-        return render_template('verificar_email.html', email=email, erro='Ainda existe um código válido para este e-mail. Aguarde a expiração ou use o código atual.')
+        return render_template('verificar_email.html', email=email, erro='Ainda existe um código válido para este e-mail. Aguarde a expiração ou use o código atual.', acao=acao)
 
     conn, cursor = connection()
     cursor.execute("SELECT id_user FROM usuarios WHERE email = %s LIMIT 1", (email,))
     usuario_existente = cursor.fetchone()
     close(conn, cursor)
 
-    if usuario_existente:
+    if acao == 'cadastro' and usuario_existente:
         return render_template('cadastro.html', erro='Esse e-mail já está cadastrado.')
 
     pending_item = next((item for item in PENDING_USERS if item['email'] == email), None)
@@ -786,12 +873,101 @@ def reenviar_codigo():
             'username': pending_item['username'] if pending_item else '',
             'senha': pending_item['senha'] if pending_item else '',
             'aceita_termos': bool(pending_item.get('aceita_termos')) if pending_item else True,
+            'tipo': acao,
         })
     except ValueError as exc:
         return render_template('cadastro.html', erro=str(exc))
 
     session['pending_email'] = new_pending['email']
-    return render_template('verificar_email.html', email=new_pending['email'], erro=None)
+    return render_template('verificar_email.html', email=new_pending['email'], erro=None, acao=acao)
+
+
+@routes.route('/esqueci-senha', methods=['GET', 'POST'])
+def esqueci_senha():
+    email = normalize_email(request.form.get('email') or request.args.get('email'))
+    erro = None
+
+    if request.method == 'POST':
+        if not email:
+            erro = 'Informe o e-mail cadastrado.'
+        else:
+            conn, cursor = connection()
+            cursor.execute("SELECT id_user FROM usuarios WHERE email = %s LIMIT 1", (email,))
+            usuario_existente = cursor.fetchone()
+            close(conn, cursor)
+
+            if not usuario_existente:
+                erro = 'Nenhum usuário encontrado com este e-mail.'
+            else:
+                pending = next((item for item in PENDING_USERS if item['email'] == email), None)
+                if pending and datetime.now() < pending['expira_em']:
+                    session['pending_email'] = email
+                    return render_template('verificar_email.html', email=email, erro='Já existe um código válido para este e-mail. Use-o para continuar.', acao='reset_senha')
+
+                try:
+                    new_pending = create_verification_code(email, {'tipo': 'reset_senha'})
+                except ValueError as exc:
+                    erro = str(exc)
+                else:
+                    session['pending_email'] = new_pending['email']
+                    return render_template('verificar_email.html', email=new_pending['email'], erro=None, acao='reset_senha')
+
+    return render_template('esqueci_senha.html', email=email, erro=erro)
+
+
+@routes.route('/redefinir-senha', methods=['GET', 'POST'])
+def redefinir_senha():
+    email = normalize_email(request.form.get('email') or request.args.get('email') or session.get('reset_email') or session.get('pending_email'))
+    erro = None
+
+    if request.method == 'POST':
+        nova_senha = request.form.get('nova_senha') or ''
+        confirmar = request.form.get('confirmar_senha') or ''
+
+        if not email:
+            erro = 'E-mail não informado.'
+        elif len(nova_senha) < 6:
+            erro = 'A nova senha deve ter pelo menos 6 caracteres.'
+        elif nova_senha != confirmar:
+            erro = 'As senhas não coincidem.'
+        else:
+            conn, cursor = connection()
+            cursor.execute("UPDATE usuarios SET senha = %s WHERE email = %s", (generate_password_hash(nova_senha), email))
+            conn.commit()
+            close(conn, cursor)
+            session.pop('reset_email', None)
+            session.pop('pending_email', None)
+            if 'usuario_id' in session:
+                return redirect(url_for('routes.index'))
+            return redirect(url_for('routes.login'))
+
+    return render_template('redefinir_senha.html', email=email, erro=erro)
+
+
+@routes.route('/trocar-senha', methods=['GET', 'POST'])
+def trocar_senha():
+    if 'usuario_id' not in session:
+        return redirect(url_for('routes.login'))
+
+    email = normalize_email(request.form.get('email') or request.args.get('email') or session.get('usuario_email'))
+    if not email:
+        email = normalize_email(session.get('usuario_email'))
+
+    if request.method == 'POST':
+        nova_senha = request.form.get('nova_senha') or ''
+        confirmar = request.form.get('confirmar_senha') or ''
+        if len(nova_senha) < 6:
+            return render_template('redefinir_senha.html', email=email, erro='A nova senha deve ter pelo menos 6 caracteres.')
+        if nova_senha != confirmar:
+            return render_template('redefinir_senha.html', email=email, erro='As senhas não coincidem.')
+
+        conn, cursor = connection()
+        cursor.execute("UPDATE usuarios SET senha = %s WHERE id_user = %s", (generate_password_hash(nova_senha), session['usuario_id']))
+        conn.commit()
+        close(conn, cursor)
+        return redirect(url_for('routes.index'))
+
+    return render_template('redefinir_senha.html', email=email, erro=None)
 
 # ====================== ROTAS DE PUT ======================
 
@@ -803,11 +979,20 @@ def json_error(message, status=400):
 def editar_viagem(id_viagem):
     dados = request.get_json(silent=True) or {}
     destino = dados.get("destino")
-    data_viagem = dados.get("data_viagem")
-    data_volta = dados.get("data_volta")
+    data_viagem = (dados.get("data_viagem") or "").strip()
+    data_volta = (dados.get("data_volta") or "").strip()
 
-    if not destino or not data_viagem or not data_volta or data_volta < data_viagem:
-        return json_error("Destino e datas válidos são obrigatórios.")
+    if not destino or not data_viagem or not data_volta:
+        return json_error("Destino e datas válidas são obrigatórias.")
+
+    try:
+        data_ida = date.fromisoformat(data_viagem)
+        data_retorno = date.fromisoformat(data_volta)
+    except ValueError:
+        return json_error("As datas informadas não são válidas.")
+
+    if data_ida < date.today() or data_retorno < data_ida:
+        return json_error("A data de ida não pode ser anterior a hoje e a data de volta não pode ser anterior à data de ida.")
 
     conn, cursor = connection()
     cursor.execute("""
@@ -919,11 +1104,14 @@ def deletar_usuario(id_user):
         return json_error("Acesso não autorizado.", 403)
 
     conn, cursor = connection()
-    cursor.execute("SELECT id_viagem FROM viagem WHERE id_user = %s", (id_user,))
-    viagens = [viagem[0] for viagem in cursor.fetchall()]
-    for id_viagem in viagens:
-        cursor.execute("DELETE FROM anotacoes WHERE id_viagem = %s", (id_viagem,))
-        cursor.execute("DELETE FROM movimentacoes WHERE id_viagem = %s", (id_viagem,))
+    cursor.execute(
+        "DELETE FROM anotacoes WHERE id_viagem IN (SELECT id_viagem FROM viagem WHERE id_user = %s)",
+        (id_user,)
+    )
+    cursor.execute(
+        "DELETE FROM movimentacoes WHERE id_viagem IN (SELECT id_viagem FROM viagem WHERE id_user = %s)",
+        (id_user,)
+    )
     cursor.execute("DELETE FROM viagem WHERE id_user = %s", (id_user,))
     cursor.execute("DELETE FROM usuarios WHERE id_user = %s", (id_user,))
     conn.commit()
