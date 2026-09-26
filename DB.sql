@@ -60,13 +60,40 @@ USE viagem_app;
 
 -- 5 países
 INSERT INTO paises (pais, moeda, cod_moeda, cust_med, simbolo, imagem, sigla) VALUES
-('Brasil','Real', 'BRL', 000.00, "R$", null, "br"),
-('Japão', 'Iene', 'JPY', 680.00, "¥" , "https://sitecontent.kumon.com.br/site/general/638814864529335322_cultura-japonesa.jpg?width=100", "jp"),
-('Estados Unidos', 'Dolar', 'USD', 950.00, "$", "https://images.unsplash.com/photo-1485871981521-5b1fd3805eee", "us"),
-('França', 'Euro', 'EUR', 800.00, "€" , "https://images.unsplash.com/photo-1502602898657-3e91760cbb34", "fr"),
-('Coreia do Sul', 'Won', 'KRW', 620.00, "₩" , "https://omundodiplomatico.com.br/wp-content/uploads/2025/03/seoul-south-korea.webp","kr");
-
--- 1 usuário
+('Brasil','Real','BRL',000.00,'R$',NULL,'br'),
+('Japão','Iene','JPY',25000.00,'¥','https://sitecontent.kumon.com.br/site/general/638814864529335322_cultura-japonesa.jpg?width=100','jp'),
+('Estados Unidos','Dolar','USD',250.00,'$','https://images.unsplash.com/photo-1485871981521-5b1fd3805eee','us'),
+('França','Euro','EUR',180.00,'€','https://images.unsplash.com/photo-1502602898657-3e91760cbb34','fr'),
+('Coreia do Sul','Won','KRW',180000.00,'₩','https://omundodiplomatico.com.br/wp-content/uploads/2025/03/seoul-south-korea.webp','kr'),
+('Bélgica','Euro','EUR',180.00,'€','https://commons.wikimedia.org/wiki/Special:Redirect/file/Brussels-Grand-Place.jpg','be'),
+('Bulgária','Euro','EUR',100.00,'€','https://commons.wikimedia.org/wiki/Special:Redirect/file/Rila_Monastery.jpg','bg'),
+('Croácia','Euro','EUR',130.00,'€','https://commons.wikimedia.org/wiki/Special:Redirect/file/Dubrovnik_Croatia.jpg','hr'),
+('República Tcheca','Coroa tcheca','CZK',2500.00,'Kč','https://commons.wikimedia.org/wiki/Special:Redirect/file/Charles_Bridge%2C_Prague.jpg','cz'),
+('Dinamarca','Coroa dinamarquesa','DKK',1000.00,'kr','https://commons.wikimedia.org/wiki/Special:Redirect/file/Nyhavn_Copenhagen_Photo.jpg','dk'),
+('Alemanha','Euro','EUR',130.00,'€','https://commons.wikimedia.org/wiki/Special:Redirect/file/Neuschwanstein_Castle%2C_Germany.jpg','de'),
+('Estônia','Euro','EUR',120.00,'€','https://commons.wikimedia.org/wiki/Special:Redirect/file/Tallinn%2C_Estonia%2C_Wiew_of_Old_Town.jpg','ee'),
+('Grécia','Euro','EUR',140.00,'€','https://commons.wikimedia.org/wiki/Special:Redirect/file/Santorini%2C_Greece.jpg','gr'),
+('Espanha','Euro','EUR',150.00,'€','https://commons.wikimedia.org/wiki/Special:Redirect/file/Sagrada_Familia%2C_Barcelona.jpg','es'),
+('Itália','Euro','EUR',150.00,'€','https://commons.wikimedia.org/wiki/Special:Redirect/file/Colosseum_in_rome.jpg','it'),
+('Letônia','Euro','EUR',100.00,'€','https://commons.wikimedia.org/wiki/Special:Redirect/file/Riga_Old_Town.jpg','lv'),
+('Lituânia','Euro','EUR',100.00,'€','https://commons.wikimedia.org/wiki/Special:Redirect/file/Trakai_Castle.jpg','lt'),
+('Luxemburgo','Euro','EUR',160.00,'€','https://commons.wikimedia.org/wiki/Special:Redirect/file/Luxembourg_City_Landscape_Cityscape_Panorama.jpg','lu'),
+('Hungria','Forint','HUF',35000.00,'Ft','https://commons.wikimedia.org/wiki/Special:Redirect/file/Parlamento_de_Budapest_2026.jpg','hu'),
+('Malta','Euro','EUR',130.00,'€','https://commons.wikimedia.org/wiki/Special:Redirect/file/Comino-Bluelag.jpg','mt'),
+('Países Baixos','Euro','EUR',170.00,'€','https://commons.wikimedia.org/wiki/Special:Redirect/file/Amsterdam_canals.jpg','nl'),
+('Polônia','Zloty','PLN',450.00,'zł','https://commons.wikimedia.org/wiki/Special:Redirect/file/MorskieOko.jpg','pl'),
+('Portugal','Euro','EUR',110.00,'€','https://commons.wikimedia.org/wiki/Special:Redirect/file/Palacio_Nacional_da_Pena.jpg','pt'),
+('Romênia','Leu romeno','RON',100.00,'lei','https://commons.wikimedia.org/wiki/Special:Redirect/file/Bran_Castle_%2827998292264%29.jpg','ro'),
+('Eslovênia','Euro','EUR',130.00,'€','https://commons.wikimedia.org/wiki/Special:Redirect/file/Lake_bled.jpg','si'),
+('Eslováquia','Euro','EUR',110.00,'€','https://commons.wikimedia.org/wiki/Special:Redirect/file/Bratislava-Castle.jpg','sk'),
+('Finlândia','Euro','EUR',150.00,'€','https://commons.wikimedia.org/wiki/Special:Redirect/file/Helsinki_Cathedral.jpg','fi'),
+('Suécia','Coroa sueca','SEK',1000.00,'kr','https://commons.wikimedia.org/wiki/Special:Redirect/file/Stockholm_Gamla_stan.jpg','se'),
+('Islândia','Coroa islandesa','ISK',25000.00,'kr','https://commons.wikimedia.org/wiki/Special:Redirect/file/Iceland_Sk%C3%B3gafoss.jpg','is'),
+('Noruega','Coroa norueguesa','NOK',1500.00,'kr','https://commons.wikimedia.org/wiki/Special:Redirect/file/Geirangerfjord%2C_Norway.jpg','no'),
+('Suíça','Franco suíço','CHF',250.00,'CHF','https://commons.wikimedia.org/wiki/Special:Redirect/file/Matterhorn_Suisse.jpg','ch'),
+('Liechtenstein','Franco suíço','CHF',270.00,'CHF','https://commons.wikimedia.org/wiki/Special:Redirect/file/Liechtenstein_Schloss_Vaduz.jpg','li'),
+('Reino Unido','Libra esterlina','GBP',180.00,'£','https://commons.wikimedia.org/wiki/Special:Redirect/file/Big_Ben_London_2025.jpg','gb'),
+('Nova Zelândia','Dólar neozelandês','NZD',250.00,'NZ$','https://commons.wikimedia.org/wiki/Special:Redirect/file/Milford_Sound%2C_New_Zealand_%28001%29.JPG','nz');
 INSERT INTO usuarios (nome, username, email, senha, aceitou_lgpd) VALUES
 ("Gabriel", "gabriel123", 'gabriel@email.com', '123456', 1);
 
