@@ -3,13 +3,26 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="robots" content="index, follow">
+    <meta name="description" content="PlannerTrip é a sua plataforma para planejar viagens, controlar a meta financeira, guardar dinheiro e organizar anotações e datas da viagem.">
+    <meta name="theme-color" content="#0f172a">
+    <meta property="og:title" content="PlannerTrip | Planeje sua viagem com organização">
+    <meta property="og:description" content="Acompanhe sua meta de viagem, gastos e futuras viagens em um só lugar.">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="{{ request.url_root }}">
+    <meta property="og:image" content="{{ request.url_root }}static/img/logo.png">
+    <meta property="twitter:card" content="summary_large_image">
+    <meta property="twitter:title" content="PlannerTrip | Planeje sua viagem com organização">
+    <meta property="twitter:description" content="Acompanhe sua meta de viagem, gastos e futuras viagens em um só lugar.">
+    <meta property="twitter:image" content="{{ request.url_root }}static/img/logo.png">
+    <link rel="canonical" href="{{ request.url_root }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
     <link rel="shortcut icon" href="{{ url_for('static', filename='img/fav.png') }}" type="image/x-png">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@phosphor-icons/web@2.1.2/src/regular/style.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/lipis/flag-icons@7.3.2/css/flag-icons.min.css"/>
     <script src="https://kit.fontawesome.com/a3a9f84800.js" crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <title>PlannerTrip</title>
+    <title>PlannerTrip | Planeje sua viagem</title>
 </head>
 <body data-viagem-id="{{ id_viagem if id_viagem is not none else '' }}">
     <header>
@@ -287,7 +300,7 @@
 
             <br>
 
-            <button type="submit">Salvar viagem</button>
+            <button type="submit" class="dialog-btn">Salvar viagem</button>
         </form>
     </dialog>
 
@@ -333,6 +346,7 @@
             <input type="password" id="profile-password" placeholder="Deixe vazio para manter a atual">
             <div class="modal-actions">
                 <button type="submit">Salvar perfil</button>
+                <button type="button" id="change-password-btn" class="secondary-btn" data-user-email="{{ perfil[3] }}">Trocar senha</button>
                 <button type="button" id="delete-account-btn" class="danger-btn" data-user-id="{{ perfil[0] }}">Excluir conta</button>
             </div>
         </form>

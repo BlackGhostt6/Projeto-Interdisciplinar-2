@@ -1,5 +1,86 @@
 const themeButtons = document.querySelectorAll("#theme-toggle-btn, #login-theme-btn");
 
+function showToast(message, type = "success") {
+    const toast = document.getElementById("form-toast");
+    if (!toast) return;
+    toast.textContent = message;
+    toast.className = `toast show ${type}`;
+    clearTimeout(showToast.timeoutId);
+    showToast.timeoutId = setTimeout(() => {
+        toast.className = "toast";
+    }, 3500);
+}
+
+function setSubmitLoading(button, isLoading, text = "Continuar") {
+    if (!button) return;
+    button.disabled = isLoading;
+    button.dataset.originalText = button.dataset.originalText || button.textContent.trim();
+    button.textContent = isLoading ? "Enviando..." : button.dataset.originalText;
+}
+
+const cadastroForm = document.getElementById("cadastro-form");
+
+if (cadastroForm) {
+    cadastroForm.addEventListener("submit", async (event) => {
+        event.preventDefault();
+
+        const submitButton = cadastroForm.querySelector('button[type="submit"]');
+        const nome = document.getElementById("nome")?.value.trim();
+        const username = document.getElementById("username")?.value.trim();
+        const email = document.getElementById("email")?.value.trim();
+        const senha = document.getElementById("senha")?.value;
+        const aceitaTermos = document.getElementById("aceita_termos")?.checked;
+
+        if (!nome || !username || !email || !senha) {
+            showToast("Preencha nome, usuário, e-mail e senha antes de continuar.", "error");
+            return;
+        }
+
+        if (senha.length < 6) {
+            showToast("A senha deve ter pelo menos 6 caracteres.", "error");
+            return;
+        }
+
+        if (!aceitaTermos) {
+            showToast("Você precisa aceitar os termos antes de continuar.", "error");
+            return;
+        }
+
+        setSubmitLoading(submitButton, true);
+        showToast("Enviando o código de verificação...", "success");
+
+        const formData = new FormData(cadastroForm);
+
+        try {
+            const response = await fetch("/api/cadastro/enviar-codigo", {
+                method: "POST",
+                body: formData
+            });
+
+            const data = await response.json().catch(() => ({}));
+
+            if (!response.ok) {
+                setSubmitLoading(submitButton, false);
+                showToast(data.erro || "Não foi possível enviar o código.", "error");
+                return;
+            }
+
+            if (data.codigo_teste) {
+                showToast(`Código de teste: ${data.codigo_teste}`, "success");
+            } else {
+                showToast("Código enviado com sucesso. Agora confirme o e-mail.", "success");
+            }
+
+            setTimeout(() => {
+                window.location.href = `/verificar-email?email=${encodeURIComponent(email)}`;
+            }, 1800);
+        } catch (error) {
+            setSubmitLoading(submitButton, false);
+            showToast("Erro ao enviar o código. Tente novamente.", "error");
+        }
+    });
+}
+
 function syncThemeButton(button, isDarkMode) {
     const icon = button.querySelector("i");
     const label = button.querySelector("span");
@@ -293,6 +374,15 @@ if (deleteAccountButton) {
         } catch (error) {
             alert(error.message);
         }
+    });
+}
+
+const changePasswordButton = document.getElementById("change-password-btn");
+if (changePasswordButton) {
+    changePasswordButton.addEventListener("click", () => {
+        const email = changePasswordButton.dataset.userEmail;
+        if (!email) return;
+        window.location.href = `/esqueci-senha?email=${encodeURIComponent(email)}`;
     });
 }
 

@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="robots" content="index, follow">
+    <meta name="description" content="Política de privacidade do PlannerTrip. Veja como coletamos, usamos, armazenamos e protegemos seus dados pessoais.">
+    <meta property="og:title" content="Política de Privacidade | PlannerTrip">
+    <meta property="og:description" content="Conheça as regras de uso, proteção de dados e direitos de privacidade do PlannerTrip.">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="{{ request.url_root }}politica-de-privacidade">
+    <meta property="og:image" content="{{ request.url_root }}static/img/logo.png">
+    <meta property="twitter:card" content="summary_large_image">
+    <meta property="twitter:title" content="Política de Privacidade | PlannerTrip">
+    <meta property="twitter:description" content="Conheça as regras de uso, proteção de dados e direitos de privacidade do PlannerTrip.">
+    <meta property="twitter:image" content="{{ request.url_root }}static/img/logo.png">
+    <title>Política de Privacidade | PlannerTrip</title>
+    <link rel="canonical" href="{{ request.url_root }}politica-de-privacidade">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="shortcut icon" href="{{ url_for('static', filename='img/fav.png') }}" type="image/x-png">
+</head>
+<body style="padding: 2rem 1rem; background: var(--bg); color: var(--text);">
+    <main style="max-width: 900px; margin: 0 auto; background: var(--card); border: 1px solid var(--border); border-radius: 16px; padding: 2rem; box-shadow: 0 8px 30px rgba(0,0,0,0.08);">
+        <h1>Política de Privacidade</h1>
+
+        <p>Esta Política de Privacidade descreve como o PlannerTrip coleta, utiliza, armazena, protege e compartilha as informações pessoais fornecidas por seus usuários.</p>
+
+        <h2>1. Informações coletadas</h2>
+        <p>Podemos coletar dados como:</p>
+        <ul>
+            <li>Nome;</li>
+            <li>Nome de usuário;</li>
+            <li>E-mail;</li>
+            <li>Senha (armazenada de forma segura com hashing);</li>
+            <li>Dados de viagens cadastradas, metas, movimentações financeiras e anotações;</li>
+            <li>Informações necessárias para autenticação e suporte ao usuário.</li>
+        </ul>
+
+        <h2>2. Finalidade do uso dos dados</h2>
+        <p>Os dados são utilizados para:</p>
+        <ul>
+            <li>criar e manter sua conta;</li>
+            <li>permitir o acesso ao sistema;</li>
+            <li>organizar viagens, metas e movimentações;</li>
+            <li>melhorar a experiência do usuário;</li>
+            <li>enviar códigos de verificação e informações essenciais relacionadas à conta;</li>
+            <li>prestar suporte e cumprir obrigações legais.</li>
+        </ul>
+
+        <h2>3. Armazenamento e segurança</h2>
+        <p>Adotamos medidas razoáveis para proteger os dados pessoais contra acesso não autorizado, alteração, divulgação ou destruição. Entretanto, nenhum sistema de tecnologia é completamente infalível, e o uso do serviço ocorre por sua conta e risco.</p>
+
+        <h2>4. Compartilhamento de dados</h2>
+        <p>Os dados pessoais não serão vendidos ou compartilhados com terceiros, salvo quando exigido por lei, por ordem judicial, ou para a operação essencial do serviço, como serviços de infraestrutura e comunicação necessários ao funcionamento da plataforma.</p>
+
+        <h2>5. Cookies e tecnologias relacionadas</h2>
+        <p>O site pode utilizar cookies e tecnologias semelhantes para melhorar a experiência de uso, manter a sessão do usuário e garantir o funcionamento adequado do sistema.</p>
+
+        <h2>6. Direitos do usuário</h2>
+        <p>Você pode solicitar, a qualquer momento:</p>
+        <ul>
+            <li>acesso aos seus dados;</li>
+            <li>corrigir informações incorretas;</li>
+            <li>solicitar exclusão da conta e dos dados relacionados;</li>
+            <li>revogar consentimentos quando aplicável.</li>
+        </ul>
+        <p>Para exercer esses direitos, entre em contato com o responsável pelo sistema.</p>
+
+        <h2>7. Retenção de dados</h2>
+        <p>Os dados serão mantidos pelo tempo necessário para cumprir a finalidade do serviço, a legislação aplicável e eventuais obrigações legais ou de suporte ao usuário.</p>
+
+        <h2>8. Alterações nesta política</h2>
+        <p>Esta política pode ser atualizada periodicamente. Qualquer alteração relevante será comunicada através do site ou por meio de canais de contato do sistema.</p>
+
+        <h2>9. Contato</h2>
+        <p>Para dúvidas sobre privacidade, proteção de dados ou exclusão de conta, entre em contato pelo e-mail informado no site ou no cadastro do sistema.</p>
+
+        <div style="margin-top: 2rem;">
+            <a href="{{ url_for('routes.login') }}" class="btn">Voltar para o login</a>
+        </div>
+    </main>
+</body>
+</html>

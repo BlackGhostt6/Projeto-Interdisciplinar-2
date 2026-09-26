@@ -3,13 +3,26 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="robots" content="index, follow">
+    <meta name="description" content="Crie sua conta no PlannerTrip para planejar viagens, acompanhar metas, controlar gastos e manter anotações em um só lugar.">
+    <meta name="theme-color" content="#0f172a">
+    <meta property="og:title" content="Cadastro | PlannerTrip">
+    <meta property="og:description" content="Abra sua conta e organize sua próxima viagem com metas, orçamento e planejamento inteligente.">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="{{ request.url_root }}cadastro">
+    <meta property="og:image" content="{{ request.url_root }}static/img/logo.png">
+    <meta property="twitter:card" content="summary_large_image">
+    <meta property="twitter:title" content="Cadastro | PlannerTrip">
+    <meta property="twitter:description" content="Abra sua conta e organize sua próxima viagem com metas, orçamento e planejamento inteligente.">
+    <meta property="twitter:image" content="{{ request.url_root }}static/img/logo.png">
+    <link rel="canonical" href="{{ request.url_root }}cadastro">
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
     <link rel="shortcut icon" href="{{ url_for('static', filename='img/fav.png') }}" type="image/x-png">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@phosphor-icons/web@2.1.2/src/regular/style.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/lipis/flag-icons@7.3.2/css/flag-icons.min.css"/>
     <script src="https://kit.fontawesome.com/a3a9f84800.js" crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <title>Cadastro</title>
+    <title>Cadastro | PlannerTrip</title>
 </head>
 <body style="display: flex; justify-content: center; align-items: center; height: 100vh;">
     <section id="cadastro">
@@ -17,30 +30,36 @@
         {% if erro %}
             <p class="erro-msg">{{ erro }}</p>
         {% endif %}
-        <form method="POST" autocomplete="off" action="/cadastrar-user">
+        <div id="form-toast" class="toast" aria-live="polite"></div>
+        <form id="cadastro-form" method="POST" autocomplete="new-password">
             <label for="nome">nome:</label>
-            <input type="text" id="nome" name="nome" placeholder="Digite seu primeiro nome" autocomplete="off" required>
+            <input type="text" id="nome" name="nome" placeholder="Digite seu primeiro nome" autocomplete="off" autocapitalize="off" spellcheck="false">
             <label for="user">Usuário</label>
-            <input type="text" id="username" name="username" placeholder="Digite um nome de usuário" autocomplete="off" required>
+            <input type="text" id="username" name="username" placeholder="Digite um nome de usuário" autocomplete="off" autocapitalize="off" spellcheck="false">
+
             <label for="email">E-mail:</label>
-            <input type="email" id="email" name="email" placeholder="Digite seu email" autocomplete="off" required>
+            <input type="email" id="email" name="email" placeholder="Digite seu email" autocomplete="new-email" autocapitalize="off" spellcheck="false">
+
             <label for="senha">Crie sua senha:</label>
                 <div class="senha-container">
-                    <input type="password" id="senha" name="senha" placeholder="Digite sua senha" required>
+                    <input type="password" id="senha" name="senha" placeholder="Digite sua senha" autocomplete="new-password">
 
                     <button type="button" id="toggleSenha" aria-label="Mostrar senha">
                         <i class="ph ph-eye"></i>
                     </button>
                 </div>
             <label class="lgpd-box" for="aceita_termos">
-                <input type="checkbox" id="aceita_termos" name="aceita_termos" required>
-                <span>Concordo com o tratamento dos meus dados e com a política de privacidade/LGPD.</span>
+                <input type="checkbox" id="aceita_termos" name="aceita_termos">
+                <span>
+                    Concordo com o tratamento dos meus dados e com a
+                    <a href="{{ url_for('routes.politica_privacidade') }}" target="_blank" rel="noopener noreferrer">política de privacidade/LGPD</a>.
+                </span>
             </label>
             <label class="login">
                 <p>Já possui uma conta? <a href="{{ url_for('routes.login') }}">Clique aqui.</a></p>
             </label>
             <div id="botoes">
-                <button class="btn" id="login-btn" type="submit">Criar conta</button>
+                <button class="btn" id="login-btn" type="submit">Continuar</button>
                 <button class="btn" id="login-theme-btn" type="button"><i id="theme-icon" class="fas fa-moon"></i></button>
             </div>
         </form>
