@@ -278,7 +278,7 @@ progress::-webkit-progress-value{
     display: grid;
     grid-template-columns: 20px 1fr;
     place-items: center;
-    margin-top: .6rem;
+    margin-top: 1.6rem;
     padding: .9rem;
     background:rgb(from var(--accent) r g b / 20%);
     border-radius: 15px;

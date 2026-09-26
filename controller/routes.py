@@ -2,6 +2,7 @@ from flask import Blueprint, render_template, request, jsonify, send_file, sessi
 from database import get_db_connection, connection, close
 from utils.currency import get_cotacao, get_variacao_cotacao, moeda
 from werkzeug.security import generate_password_hash, check_password_hash
+from decimal import Decimal
 import json
 from dotenv import load_dotenv
 from datetime import datetime, timedelta, date
@@ -183,9 +184,10 @@ def index():
         session["viagem"] = id_viagem
 
     dash = getDash(id_viagem)
-    meta = dash['custo'] * dash['dias']
-    percent = round((dash['guardado'] / meta) * 100, 1) if meta else 0
     cotacao = get_cotacao(dash['cotacao'], "brl")
+    valor_diario_em_brl = (Decimal(str(cotacao)) * dash['custo']) if cotacao is not None else dash['custo']
+    meta = valor_diario_em_brl * dash['dias']
+    percent = round((dash['guardado'] / meta) * 100, 1) if meta else 0
     variacao = get_variacao_cotacao(dash['cotacao'], "brl")
 
     if dash['guardado'] < meta:
