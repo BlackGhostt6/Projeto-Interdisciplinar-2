@@ -21,8 +21,14 @@
             <label for="usuario">Usuário / e-mail:</label>
             <input type="text" id="usuario" name="usuario" placeholder="Digite seu usuário ou e-mail" required>
             <label for="senha">Senha:</label>
-            <input type="password" id="senha" name="senha" placeholder="Digite sua senha" required>
-            <br>
+                <div class="senha-container">
+                    <input type="password" id="senha" name="senha" placeholder="Digite sua senha" required>
+
+                    <button type="button" id="toggleSenha" aria-label="Mostrar senha">
+                        <i class="ph ph-eye"></i>
+                    </button>
+                </div>
+            <br>    
             <p>Não possui uma conta? <a href="{{ url_for('routes.cadastro') }}">Clique aqui.</a></p>
             <div id="botoes">
                 <button class="btn" id="login-btn" type="submit">Login</button>
