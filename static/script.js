@@ -295,3 +295,16 @@ if (deleteAccountButton) {
         }
     });
 }
+
+const toggleSenha = document.getElementById("toggleSenha");
+const senha = document.getElementById("senha");
+
+toggleSenha.addEventListener("click", () => {
+    const visivel = senha.type === "text";
+
+    senha.type = visivel ? "password" : "text";
+
+    toggleSenha.innerHTML = visivel
+        ? '<i class="ph ph-eye"></i>'
+        : '<i class="ph ph-eye-slash"></i>';
+});

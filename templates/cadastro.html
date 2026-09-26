@@ -25,8 +25,13 @@
             <label for="email">E-mail:</label>
             <input type="email" id="email" name="email" placeholder="Digite seu email" autocomplete="off" required>
             <label for="senha">Crie sua senha:</label>
-            <input type="password" id="senha" name="senha" placeholder="Digite sua senha" autocomplete="new-password" required>
+                <div class="senha-container">
+                    <input type="password" id="senha" name="senha" placeholder="Digite sua senha" required>
 
+                    <button type="button" id="toggleSenha" aria-label="Mostrar senha">
+                        <i class="ph ph-eye"></i>
+                    </button>
+                </div>
             <label class="lgpd-box" for="aceita_termos">
                 <input type="checkbox" id="aceita_termos" name="aceita_termos" required>
                 <span>Concordo com o tratamento dos meus dados e com a política de privacidade/LGPD.</span>

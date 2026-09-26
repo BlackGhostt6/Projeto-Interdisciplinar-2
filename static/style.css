@@ -298,6 +298,42 @@ progress::-webkit-progress-value{
     justify-content: center;
 }
 
+.senha-container {
+    position: relative;
+    width: 100%;
+}
+
+.senha-container input {
+    width: 100%;
+    padding-right: 45px;
+    box-sizing: border-box;
+}
+
+.senha-container button {
+    position: absolute;
+    right: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+
+    border: none;
+    background: transparent;
+    color: #777;
+    cursor: pointer;
+    padding: 4px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.senha-container button:hover {
+    transform: translateY(-50%);
+}
+
+.senha-container button i {
+    font-size: 20px;
+}
+
 img{
     object-fit: cover;
     width: 2.7rem;
@@ -315,7 +351,6 @@ img{
     padding: 0;
     font-size: .7rem;
 }
-
 
 .target i{
     font-size: 2rem;
