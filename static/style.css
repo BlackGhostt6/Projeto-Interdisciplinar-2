@@ -298,6 +298,51 @@ progress::-webkit-progress-value{
     justify-content: center;
 }
 
+.email-row,
+.codigo-row {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: .6rem;
+    width: 100%;
+    margin-top: .25rem;
+}
+
+.email-row input,
+.codigo-row input {
+    width: 100%;
+}
+
+.inline-action-btn {
+    min-width: 96px;
+    border: none;
+    border-radius: 10px;
+    background: var(--secondary);
+    color: var(--white);
+    font-weight: 600;
+    cursor: pointer;
+    transition: opacity .2s ease, transform .2s ease, background .2s ease;
+}
+
+.inline-action-btn:hover {
+    transform: translateY(-1px);
+    background: var(--primary);
+}
+
+.inline-action-btn.secondary {
+    background: var(--card-btn);
+    color: var(--text);
+    border: 1px solid var(--border);
+}
+
+.inline-action-btn.secondary:hover {
+    background: var(--border);
+}
+
+button:disabled {
+    opacity: .6;
+    cursor: not-allowed;
+}
+
 .senha-container {
     position: relative;
     width: 100%;

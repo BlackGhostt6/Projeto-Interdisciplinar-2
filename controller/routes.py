@@ -4,15 +4,131 @@ from utils.currency import get_cotacao, get_variacao_cotacao, moeda
 from werkzeug.security import generate_password_hash, check_password_hash
 from decimal import Decimal
 import json
+import os
+import random
+import smtplib
+import re
+from pathlib import Path
+from email.mime.text import MIMEText
 from dotenv import load_dotenv
 from datetime import datetime, timedelta, date
 
-load_dotenv()
+load_dotenv(Path(__file__).resolve().parents[1] / ".env")
 routes = Blueprint("routes", __name__)
+
+PENDING_USERS = []
+EMAIL_CODES_PER_DAY = {}
+
+
+def normalize_email(email):
+    return (email or '').strip().lower()
+
+
+def get_daily_code_counter(email):
+    email_key = normalize_email(email)
+    today = date.today().isoformat()
+    record = EMAIL_CODES_PER_DAY.get(email_key)
+
+    if not record or record.get('day') != today:
+        EMAIL_CODES_PER_DAY[email_key] = {'day': today, 'count': 0}
+        return EMAIL_CODES_PER_DAY[email_key]
+
+    return record
+
+
+def can_send_new_code(email):
+    record = get_daily_code_counter(email)
+    return record['count'] < 5
+
+
+def send_verification_email(email, code):
+    smtp_host = os.getenv('SMTP_HOST')
+    smtp_port = int(os.getenv('SMTP_PORT', '587'))
+    smtp_user = os.getenv('SMTP_USERNAME') or os.getenv('SMTP_USER')
+    smtp_password = os.getenv('SMTP_PASSWORD')
+    use_tls = os.getenv('SMTP_USE_TLS', 'true').lower() == 'true'
+    use_ssl = os.getenv('SMTP_USE_SSL', 'false').lower() == 'true'
+    smtp_mock = os.getenv('SMTP_MOCK', 'false').lower() == 'true'
+
+    if not smtp_host:
+        if smtp_mock:
+            print(f"[SMTP MOCK] Código para {email}: {code}")
+            return
+        raise ValueError('SMTP não configurado. Defina SMTP_HOST, SMTP_PORT, SMTP_USERNAME e SMTP_PASSWORD no arquivo .env.')
+
+    message = MIMEText(
+        f"Seu código de verificação do TripPlan é: {code}\n\nEste código expira em 5 minutos.",
+        'plain',
+        'utf-8'
+    )
+    message['Subject'] = 'Código de verificação - TripPlan'
+    message['From'] = smtp_user or 'noreply@tripplan.local'
+    message['To'] = email
+
+    try:
+        if use_ssl:
+            with smtplib.SMTP_SSL(smtp_host, smtp_port) as server:
+                if smtp_user and smtp_password:
+                    server.login(smtp_user, smtp_password)
+                server.sendmail(message['From'], [email], message.as_string())
+        else:
+            with smtplib.SMTP(smtp_host, smtp_port) as server:
+                if use_tls:
+                    server.starttls()
+                if smtp_user and smtp_password:
+                    server.login(smtp_user, smtp_password)
+                server.sendmail(message['From'], [email], message.as_string())
+    except Exception as exc:
+        raise ValueError(f'Falha no envio do e-mail via SMTP: {exc}') from exc
+
+
+def create_verification_code(email, payload):
+    normalized_email = normalize_email(email)
+
+    if not can_send_new_code(normalized_email):
+        raise ValueError('Você atingiu o limite de 5 códigos para este e-mail hoje. Tente novamente amanhã.')
+
+    for item in list(PENDING_USERS):
+        if item['email'] == normalized_email:
+            PENDING_USERS.remove(item)
+
+    code = f'{random.randint(100000, 999999):06d}'
+    created_at = datetime.now()
+    pending_data = {
+        'email': normalized_email,
+        'nome': payload['nome'],
+        'username': payload['username'],
+        'senha': payload['senha'],
+        'aceita_termos': payload.get('aceita_termos', True),
+        'codigo': code,
+        'criado_em': created_at,
+        'expira_em': created_at + timedelta(minutes=5),
+    }
+
+    PENDING_USERS.append(pending_data)
+
+    record = get_daily_code_counter(normalized_email)
+    record['count'] += 1
+
+    try:
+        send_verification_email(normalized_email, code)
+    except Exception as exc:
+        PENDING_USERS = [item for item in PENDING_USERS if item['email'] != normalized_email]
+        raise ValueError(f'Não foi possível enviar o e-mail de verificação: {exc}')
+
+    return pending_data
+
+
+def clear_expired_pending_users():
+    now = datetime.now()
+    for item in list(PENDING_USERS):
+        if item['expira_em'] <= now:
+            PENDING_USERS.remove(item)
+
 
 @routes.before_request
 def require_login():
-    public_routes = {"routes.login", "routes.cadastro", "static", "routes.cadastrar"}
+    public_routes = {"routes.login", "routes.cadastro", "routes.verificar_email", "routes.reenviar_codigo", "routes.cadastrar", "static"}
     if request.endpoint in public_routes:
         return None
 
@@ -252,8 +368,76 @@ def logout():
 
 @routes.route("/cadastro")
 def cadastro():
-
+    session.pop('cadastro_validado', None)
     return render_template('cadastro.html')
+
+
+@routes.route('/api/cadastro/enviar-codigo', methods=['POST'])
+def api_enviar_codigo():
+    dados = request.form.to_dict()
+    nome = (dados.get('nome') or '').strip()
+    username = (dados.get('username') or '').strip()
+    email = normalize_email(dados.get('email'))
+    senha = dados.get('senha') or ''
+    aceita_termos = dados.get('aceita_termos') == 'on'
+
+    if not nome or not email or not senha or not username:
+        return jsonify({'sucesso': False, 'erro': 'Preencha nome, usuário, e-mail e senha.'}), 400
+
+    if not aceita_termos:
+        return jsonify({'sucesso': False, 'erro': 'Você precisa aceitar os termos de uso e LGPD para continuar.'}), 400
+
+    conn, cursor = connection()
+    cursor.execute("SELECT id_user FROM usuarios WHERE email = %s OR username = %s LIMIT 1", (email, username))
+    usuario_existente = cursor.fetchone()
+    close(conn, cursor)
+
+    if usuario_existente:
+        return jsonify({'sucesso': False, 'erro': 'Usuário ou e-mail já cadastrado.'}), 409
+
+    try:
+        pending = create_verification_code(email, {
+            'nome': nome,
+            'username': username,
+            'senha': senha,
+            'aceita_termos': aceita_termos,
+        })
+    except ValueError as exc:
+        return jsonify({'sucesso': False, 'erro': str(exc)}), 400
+
+    session['pending_email'] = pending['email']
+    session.pop('cadastro_validado', None)
+    return jsonify({'sucesso': True, 'email': pending['email']})
+
+
+@routes.route('/api/cadastro/verificar-codigo', methods=['POST'])
+def api_verificar_codigo():
+    email = normalize_email(request.form.get('email'))
+    codigo = (request.form.get('codigo') or '').strip()
+
+    if not email or not codigo:
+        return jsonify({'sucesso': False, 'erro': 'Informe o e-mail e o código.'}), 400
+
+    clear_expired_pending_users()
+    pending = next((item for item in PENDING_USERS if item['email'] == email), None)
+
+    if not pending:
+        session.pop('pending_email', None)
+        session.pop('cadastro_validado', None)
+        return jsonify({'sucesso': False, 'erro': 'Nenhum código pendente foi encontrado para este e-mail.'}), 404
+
+    if datetime.now() > pending['expira_em']:
+        PENDING_USERS = [item for item in PENDING_USERS if item['email'] != email]
+        session.pop('pending_email', None)
+        session.pop('cadastro_validado', None)
+        return jsonify({'sucesso': False, 'erro': 'O código expirou. Solicite um novo código.'}), 410
+
+    if codigo != pending['codigo']:
+        return jsonify({'sucesso': False, 'erro': 'Código inválido. Verifique e tente novamente.'}), 400
+
+    session['pending_email'] = email
+    session['cadastro_validado'] = email
+    return jsonify({'sucesso': True, 'email': email})
 
 
 # ====================== ROTAS DE GET ======================
@@ -480,7 +664,7 @@ def cadastrar():
     dados = request.form.to_dict()
     nome = (dados.get('nome') or '').strip()
     username = (dados.get('username') or '').strip()
-    email = (dados.get('email') or '').strip()
+    email = normalize_email(dados.get('email'))
     senha = dados.get('senha') or ''
     aceita_termos = request.form.get('aceita_termos') == 'on'
 
@@ -490,6 +674,9 @@ def cadastrar():
     if not aceita_termos:
         return render_template('cadastro.html', erro='Você precisa aceitar os termos de uso e LGPD para continuar.')
 
+    if session.get('cadastro_validado') != email:
+        return render_template('cadastro.html', erro='Valide o código enviado para o e-mail antes de criar a conta.')
+
     conn, cursor = connection()
     cursor.execute("SELECT id_user FROM usuarios WHERE email = %s OR username = %s LIMIT 1", (email, username))
     usuario_existente = cursor.fetchone()
@@ -498,18 +685,113 @@ def cadastrar():
         close(conn, cursor)
         return render_template('cadastro.html', erro='Usuário ou e-mail já cadastrado.')
 
-    senha_hash = generate_password_hash(senha)
+    pending = next((item for item in PENDING_USERS if item['email'] == email), None)
+    if not pending:
+        close(conn, cursor)
+        return render_template('cadastro.html', erro='Código pendente não encontrado. Solicite um novo código.')
+
+    senha_hash = generate_password_hash(pending['senha'])
     cursor.execute("""
-        INSERT INTO usuarios (nome, username ,email, senha, aceitou_lgpd) VALUES (%s, %s, %s, %s, %s)
-""", (nome, username, email, senha_hash, aceita_termos))
-    
+        INSERT INTO usuarios (nome, username, email, senha, aceitou_lgpd)
+        VALUES (%s, %s, %s, %s, %s)
+    """, (pending['nome'], pending['username'], pending['email'], senha_hash, pending['aceita_termos']))
     conn.commit()
     novo_user_id = cursor.lastrowid
-    close(conn, cursor)  
+    close(conn, cursor)
 
+    PENDING_USERS = [item for item in PENDING_USERS if item['email'] != email]
+    session.pop('pending_email', None)
+    session.pop('cadastro_validado', None)
     session['usuario_id'] = novo_user_id
-    session['usuario_nome'] = nome
+    session['usuario_nome'] = pending['nome']
     return redirect(url_for('routes.index'))
+
+
+@routes.route('/verificar-email', methods=['GET', 'POST'])
+def verificar_email():
+    email = normalize_email(request.form.get('email') or request.args.get('email') or session.get('pending_email'))
+    if request.method == 'GET':
+        return render_template('verificar_email.html', email=email, erro=None)
+
+    codigo = (request.form.get('codigo') or '').strip()
+    if not email or not codigo:
+        return render_template('verificar_email.html', email=email, erro='Informe o e-mail e o código recebido.')
+
+    clear_expired_pending_users()
+    pending = next((item for item in PENDING_USERS if item['email'] == email), None)
+
+    if not pending:
+        session.pop('pending_email', None)
+        return render_template('cadastro.html', erro='Nenhum código pendente foi encontrado para este e-mail. Solicite um novo cadastro.')
+
+    if datetime.now() > pending['expira_em']:
+        PENDING_USERS = [item for item in PENDING_USERS if item['email'] != email]
+        session.pop('pending_email', None)
+        return render_template('cadastro.html', erro='O código expirou. Solicite um novo código.')
+
+    if codigo != pending['codigo']:
+        return render_template('verificar_email.html', email=email, erro='Código inválido. Verifique o e-mail e tente novamente.')
+
+    conn, cursor = connection()
+    cursor.execute("SELECT id_user FROM usuarios WHERE email = %s OR username = %s LIMIT 1", (pending['email'], pending['username']))
+    usuario_existente = cursor.fetchone()
+
+    if usuario_existente:
+        close(conn, cursor)
+        PENDING_USERS = [item for item in PENDING_USERS if item['email'] != email]
+        session.pop('pending_email', None)
+        return render_template('cadastro.html', erro='Usuário ou e-mail já cadastrado.')
+
+    senha_hash = generate_password_hash(pending['senha'])
+    cursor.execute("""
+        INSERT INTO usuarios (nome, username, email, senha, aceitou_lgpd)
+        VALUES (%s, %s, %s, %s, %s)
+    """, (pending['nome'], pending['username'], pending['email'], senha_hash, pending['aceita_termos']))
+    conn.commit()
+    novo_user_id = cursor.lastrowid
+    close(conn, cursor)
+
+    PENDING_USERS = [item for item in PENDING_USERS if item['email'] != email]
+    session.pop('pending_email', None)
+    session['usuario_id'] = novo_user_id
+    session['usuario_nome'] = pending['nome']
+    return redirect(url_for('routes.index'))
+
+
+@routes.route('/reenviar-codigo', methods=['POST'])
+def reenviar_codigo():
+    email = normalize_email(request.form.get('email'))
+    if not email:
+        return render_template('cadastro.html', erro='E-mail não informado.')
+
+    pending = next((item for item in PENDING_USERS if item['email'] == email), None)
+    if pending and datetime.now() < pending['expira_em']:
+        return render_template('verificar_email.html', email=email, erro='Ainda existe um código válido para este e-mail. Aguarde a expiração ou use o código atual.')
+
+    conn, cursor = connection()
+    cursor.execute("SELECT id_user FROM usuarios WHERE email = %s LIMIT 1", (email,))
+    usuario_existente = cursor.fetchone()
+    close(conn, cursor)
+
+    if usuario_existente:
+        return render_template('cadastro.html', erro='Esse e-mail já está cadastrado.')
+
+    pending_item = next((item for item in PENDING_USERS if item['email'] == email), None)
+    if pending_item:
+        PENDING_USERS = [item for item in PENDING_USERS if item['email'] != email]
+
+    try:
+        new_pending = create_verification_code(email, {
+            'nome': pending_item['nome'] if pending_item else '',
+            'username': pending_item['username'] if pending_item else '',
+            'senha': pending_item['senha'] if pending_item else '',
+            'aceita_termos': bool(pending_item.get('aceita_termos')) if pending_item else True,
+        })
+    except ValueError as exc:
+        return render_template('cadastro.html', erro=str(exc))
+
+    session['pending_email'] = new_pending['email']
+    return render_template('verificar_email.html', email=new_pending['email'], erro=None)
 
 # ====================== ROTAS DE PUT ======================
 

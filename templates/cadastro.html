@@ -17,13 +17,23 @@
         {% if erro %}
             <p class="erro-msg">{{ erro }}</p>
         {% endif %}
-        <form method="POST" autocomplete="off" action="/cadastrar-user">
+        <form id="cadastro-form" method="POST" autocomplete="off" action="/cadastrar-user">
             <label for="nome">nome:</label>
             <input type="text" id="nome" name="nome" placeholder="Digite seu primeiro nome" autocomplete="off" required>
             <label for="user">Usuário</label>
             <input type="text" id="username" name="username" placeholder="Digite um nome de usuário" autocomplete="off" required>
+
             <label for="email">E-mail:</label>
-            <input type="email" id="email" name="email" placeholder="Digite seu email" autocomplete="off" required>
+            <div class="email-row">
+                <input type="email" id="email" name="email" placeholder="Digite seu email" autocomplete="off" required>
+                <button type="button" id="enviar-codigo-btn" class="inline-action-btn">Enviar</button>
+            </div>
+
+            <div id="codigo-verificacao-row" class="codigo-row" hidden>
+                <input type="text" id="codigo_verificacao" name="codigo_verificacao" maxlength="6" placeholder="Código de 6 dígitos" autocomplete="off">
+                <button type="button" id="validar-codigo-btn" class="inline-action-btn secondary">Validar</button>
+            </div>
+
             <label for="senha">Crie sua senha:</label>
                 <div class="senha-container">
                     <input type="password" id="senha" name="senha" placeholder="Digite sua senha" required>
@@ -40,7 +50,7 @@
                 <p>Já possui uma conta? <a href="{{ url_for('routes.login') }}">Clique aqui.</a></p>
             </label>
             <div id="botoes">
-                <button class="btn" id="login-btn" type="submit">Criar conta</button>
+                <button class="btn" id="login-btn" type="submit" disabled>Criar conta</button>
                 <button class="btn" id="login-theme-btn" type="button"><i id="theme-icon" class="fas fa-moon"></i></button>
             </div>
         </form>
