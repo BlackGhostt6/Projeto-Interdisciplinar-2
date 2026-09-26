@@ -67,12 +67,12 @@ def send_verification_email(email, code):
 
     try:
         if use_ssl:
-            with smtplib.SMTP_SSL(smtp_host, smtp_port) as server:
+            with smtplib.SMTP_SSL(smtp_host, smtp_port, timeout=10) as server:
                 if smtp_user and smtp_password:
                     server.login(smtp_user, smtp_password)
                 server.sendmail(message['From'], [email], message.as_string())
         else:
-            with smtplib.SMTP(smtp_host, smtp_port) as server:
+            with smtplib.SMTP(smtp_host, smtp_port, timeout=10) as server:
                 if use_tls:
                     server.starttls()
                 if smtp_user and smtp_password:
