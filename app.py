@@ -5,7 +5,9 @@ from datetime import timedelta
 from utils.currency import moeda, moeda_cotacao
 
 app = Flask(__name__)
-app.secret_key = os.environ.get("SECRET_KEY", "tripplan-secret-key")
+# Força logout de todos os usuários a cada reinício do servidor.
+# Isso impede que um cookie antigo mantenha um usuário logado após exclusão do registro no banco.
+app.secret_key = os.urandom(32)
 app.config["SESSION_PERMANENT"] = True
 app.config["PERMANENT_SESSION_LIFETIME"] = timedelta(days=365)
 app.config["SESSION_REFRESH_EACH_REQUEST"] = False
