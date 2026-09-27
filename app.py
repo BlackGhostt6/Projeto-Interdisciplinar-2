@@ -5,7 +5,9 @@ from datetime import timedelta
 from utils.currency import moeda, moeda_cotacao
 
 app = Flask(__name__)
-app.secret_key = os.environ.get("SECRET_KEY", "tripplan-secret-key")
+# Força logout de todos os usuários a cada reinício do servidor.
+# Isso impede que um cookie antigo mantenha um usuário logado após exclusão do registro no banco.
+app.secret_key = os.urandom(32)
 app.config["SESSION_PERMANENT"] = True
 app.config["PERMANENT_SESSION_LIFETIME"] = timedelta(days=365)
 app.config["SESSION_REFRESH_EACH_REQUEST"] = False
@@ -24,4 +26,4 @@ app.jinja_env.filters["moeda_cotacao"] = moeda_cotacao
 
 if __name__ == '__main__':
     import os
-    app.run(debug=False, host="0.0.0.0", port=int(os.environ.get("PORT", 5000)))
+    app.run(debug=True, host="0.0.0.0", port=int(os.environ.get("PORT", 5000)))

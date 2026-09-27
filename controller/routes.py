@@ -6,12 +6,11 @@ from decimal import Decimal
 import json
 import os
 import random
-import smtplib
 import re
 from pathlib import Path
-from email.mime.text import MIMEText
 from dotenv import load_dotenv
 from datetime import datetime, timedelta, date
+import requests
 
 load_dotenv(Path(__file__).resolve().parents[1] / ".env")
 routes = Blueprint("routes", __name__)
@@ -42,48 +41,84 @@ def can_send_new_code(email):
 
 
 def send_verification_email(email, code):
-    smtp_host = os.getenv('SMTP_HOST')
-    smtp_port = int(os.getenv('SMTP_PORT', '587'))
-    smtp_user = os.getenv('SMTP_USERNAME') or os.getenv('SMTP_USER')
-    smtp_password = os.getenv('SMTP_PASSWORD')
-    use_tls = os.getenv('SMTP_USE_TLS', 'true').lower() == 'true'
-    use_ssl = os.getenv('SMTP_USE_SSL', 'false').lower() == 'true'
     smtp_mock = os.getenv('SMTP_MOCK', 'false').lower() == 'true'
-
-    if not smtp_host:
-        if smtp_mock:
-            print(f"[SMTP MOCK] Código para {email}: {code}")
-            return True
-        raise ValueError('SMTP não configurado. Defina SMTP_HOST, SMTP_PORT, SMTP_USERNAME e SMTP_PASSWORD no arquivo .env.')
-
-    message = MIMEText(
-        f"Seu código de verificação do TripPlan é: {code}\n\nEste código expira em 5 minutos.",
-        'plain',
-        'utf-8'
-    )
-    message['Subject'] = 'Código de verificação - TripPlan'
-    message['From'] = smtp_user or 'contato.gabriel276@gmail.com'
-    message['To'] = email
-
-    try:
-        if use_ssl:
-            with smtplib.SMTP_SSL(smtp_host, smtp_port) as server:
-                if smtp_user and smtp_password:
-                    server.login(smtp_user, smtp_password)
-                server.sendmail(message['From'], [email], message.as_string())
-        else:
-            with smtplib.SMTP(smtp_host, smtp_port) as server:
-                if use_tls:
-                    server.starttls()
-                if smtp_user and smtp_password:
-                    server.login(smtp_user, smtp_password)
-                server.sendmail(message['From'], [email], message.as_string())
+    if smtp_mock:
+        print(f"[SMTP MOCK] Código para {email}: {code}")
         return True
-    except Exception as exc:
-        if smtp_mock:
-            print(f"[SMTP MOCK] Código para {email}: {code}")
+
+    provider = (os.getenv('EMAIL_PROVIDER') or 'resend').lower()
+    from_email = (
+        os.getenv('RESEND_FROM')
+        or os.getenv('EMAIL_FROM')
+        or os.getenv('MAILGUN_FROM')
+        or 'no-reply@tripplan.app'
+    )
+
+    if provider == 'resend':
+        api_key = os.getenv('RESEND_API_KEY')
+        if not api_key:
+            raise ValueError('RESEND_API_KEY não configurada. Defina EMAIL_PROVIDER=resend e RESEND_API_KEY no ambiente do Railway.')
+
+        response = requests.post(
+            'https://api.resend.com/emails',
+            headers={
+                'Authorization': f'Bearer {api_key}',
+                'Content-Type': 'application/json',
+            },
+            json={
+                'from': from_email,
+                'to': [email],
+                'subject': 'Código de verificação - TripPlan',
+                'html': (
+                    f'<p>Seu código de verificação do TripPlan é: '
+                    f'<strong>{code}</strong></p>'
+                    '<p>Este código expira em 5 minutos.</p>'
+                ),
+                'text': (
+                    f'Seu código de verificação do TripPlan é: {code}\n\n'
+                    'Este código expira em 5 minutos.'
+                ),
+            },
+            timeout=30,
+        )
+
+        if response.ok:
             return True
-        raise ValueError(f'Falha no envio do e-mail via SMTP: {exc}') from exc
+
+        detail = response.text[:200] if response.text else 'sem resposta detalhada'
+        raise ValueError(f'Falha no envio do e-mail via Resend: {response.status_code} - {detail}')
+
+    if provider == 'mailgun':
+        api_key = os.getenv('MAILGUN_API_KEY')
+        domain = os.getenv('MAILGUN_DOMAIN')
+        if not api_key or not domain:
+            raise ValueError('MAILGUN_API_KEY e MAILGUN_DOMAIN não configuradas. Defina EMAIL_PROVIDER=mailgun no ambiente do Railway.')
+
+        response = requests.post(
+            f'https://api.mailgun.net/v3/{domain}/messages',
+            auth=('api', api_key),
+            data={
+                'from': from_email,
+                'to': email,
+                'subject': 'Código de verificação - TripPlan',
+                'text': (
+                    f'Seu código de verificação do TripPlan é: {code}\n\n'
+                    'Este código expira em 5 minutos.'
+                ),
+            },
+            timeout=30,
+        )
+
+        if response.ok:
+            return True
+
+        detail = response.text[:200] if response.text else 'sem resposta detalhada'
+        raise ValueError(f'Falha no envio do e-mail via Mailgun: {response.status_code} - {detail}')
+
+    raise ValueError(
+        'Provider de e-mail não configurado. Defina EMAIL_PROVIDER=resend ou EMAIL_PROVIDER=mailgun '
+        'e as variáveis da API no ambiente do Railway.'
+    )
 
 
 def create_verification_code(email, payload):
@@ -168,6 +203,15 @@ def require_login():
         return None
 
     if "usuario_id" not in session:
+        return redirect(url_for("routes.login"))
+
+    conn, cursor = connection()
+    cursor.execute("SELECT id_user FROM usuarios WHERE id_user = %s", (session["usuario_id"],))
+    usuario_existe = cursor.fetchone()
+    close(conn, cursor)
+
+    if not usuario_existe:
+        session.clear()
         return redirect(url_for("routes.login"))
 
 # criar funções uteis pra evitar ficar reescrevendo codigo
