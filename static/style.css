@@ -1499,6 +1499,11 @@ dialog input:valid:not(:placeholder-shown) {
         max-width: 48%;
     }
 
+    #login, #cadastro {
+        min-width: 90%;
+        width: 90%;
+    }
+
     .content {
         width: 52%;
     }
@@ -1980,25 +1985,46 @@ dialog input:valid:not(:placeholder-shown) {
         position: relative;
         top: auto;
         left: auto;
-        width: min(430px, calc(100% - 1rem));
+        width: min(360px, calc(100% - 1rem));
         max-width: calc(100% - 1rem);
+        min-width: 0;
         margin: .75rem auto 2rem;
-        padding: 1.35rem 1rem 1rem;
+        padding: 1.1rem .9rem .9rem;
         transform: none;
         box-sizing: border-box;
     }
 
+    body.auth-page {
+        padding: .75rem;
+        align-items: flex-start;
+    }
+
+    .auth-card {
+        width: min(360px, calc(100vw - 1rem));
+    }
+
     #login h1,
     #cadastro h1 {
-        font-size: 2.1rem;
+        font-size: clamp(1.6rem, 7vw, 2rem);
+        margin-bottom: .9rem;
+    }
+
+    #login form,
+    #cadastro form {
+        gap: .6rem;
     }
 
     #login input,
     #cadastro input:not([type="checkbox"]),
     #login-btn,
     #login-theme-btn {
-        min-height: 2.9rem;
-        font-size: .95rem;
+        min-height: 2.75rem;
+        font-size: .92rem;
+    }
+
+    #login input,
+    #cadastro input:not([type="checkbox"]) {
+        padding: .7rem .8rem;
     }
 
     #login-theme-btn {
@@ -2007,7 +2033,7 @@ dialog input:valid:not(:placeholder-shown) {
     }
 
     .lgpd-box {
-        padding: .7rem;
+        padding: .65rem .7rem;
     }
 
     footer {
