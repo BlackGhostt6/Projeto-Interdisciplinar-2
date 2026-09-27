@@ -325,9 +325,9 @@
                 {% for pais in paises %}<option value="{{ pais[0] }}">{{ pais[1] }}</option>{% endfor %}
             </select>
             <label for="edit-data-viagem">Data de ida</label>
-            <input type="date" id="edit-data-viagem" required>
+            <input type="date" id="edit-data-viagem" min="{{ hoje }}" required>
             <label for="edit-data-volta">Data de volta</label>
-            <input type="date" id="edit-data-volta" required>
+            <input type="date" id="edit-data-volta" min="{{ hoje }}" required>
             <button type="submit">Salvar alterações</button>
         </form>
     </dialog>

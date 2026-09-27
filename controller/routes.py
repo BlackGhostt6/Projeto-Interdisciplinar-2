@@ -23,6 +23,25 @@ def normalize_email(email):
     return (email or '').strip().lower()
 
 
+def validate_trip_dates(data_viagem, data_volta):
+    if not data_viagem or not data_volta:
+        raise ValueError('Destino e datas válidas são obrigatórias.')
+
+    try:
+        ida = date.fromisoformat(data_viagem)
+        volta = date.fromisoformat(data_volta)
+    except ValueError as exc:
+        raise ValueError('As datas informadas não são válidas.') from exc
+
+    if ida < date.today():
+        raise ValueError('A data de ida não pode ser anterior a hoje.')
+
+    if volta < ida:
+        raise ValueError('A data de volta não pode ser anterior à data de ida.')
+
+    return ida, volta
+
+
 def get_daily_code_counter(email):
     email_key = normalize_email(email)
     today = date.today().isoformat()
@@ -755,12 +774,8 @@ def criar_viagem():
         return redirect(url_for("routes.index"))
 
     try:
-        ida = date.fromisoformat(data_viagem)
-        volta = date.fromisoformat(data_volta)
+        validate_trip_dates(data_viagem, data_volta)
     except ValueError:
-        return redirect(url_for("routes.index"))
-
-    if ida < date.today() or volta < ida:
         return redirect(url_for("routes.index"))
 
     conn, cursor = connection()
@@ -1031,13 +1046,9 @@ def editar_viagem(id_viagem):
         return json_error("Destino e datas válidas são obrigatórias.")
 
     try:
-        data_ida = date.fromisoformat(data_viagem)
-        data_retorno = date.fromisoformat(data_volta)
-    except ValueError:
-        return json_error("As datas informadas não são válidas.")
-
-    if data_ida < date.today() or data_retorno < data_ida:
-        return json_error("A data de ida não pode ser anterior a hoje e a data de volta não pode ser anterior à data de ida.")
+        validate_trip_dates(data_viagem, data_volta)
+    except ValueError as exc:
+        return json_error(str(exc))
 
     conn, cursor = connection()
     cursor.execute("""

@@ -322,14 +322,21 @@ function bindTripDateValidation(startInputId, endInputId) {
 
     if (!startInput || !endInput) return;
 
+    const today = new Date().toISOString().split("T")[0];
+    startInput.min = today;
+    endInput.min = today;
+
     const syncMinDate = () => {
         if (startInput.value) {
+            if (startInput.value < today) {
+                startInput.value = today;
+            }
             endInput.min = startInput.value;
             if (endInput.value && endInput.value < startInput.value) {
                 endInput.value = startInput.value;
             }
         } else {
-            endInput.min = "";
+            endInput.min = today;
         }
     };
 
