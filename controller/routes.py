@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, request, jsonify, send_file, session, redirect, url_for
+from flask import Blueprint, current_app, render_template, request, jsonify, send_file, session, redirect, url_for, Response
 from database import get_db_connection, connection, close
 from utils.currency import get_cotacao, get_variacao_cotacao, moeda
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -11,12 +11,18 @@ from pathlib import Path
 from dotenv import load_dotenv
 from datetime import datetime, timedelta, date
 import requests
+from xml.etree.ElementTree import Element, SubElement, tostring
 
 load_dotenv(Path(__file__).resolve().parents[1] / ".env")
 routes = Blueprint("routes", __name__)
 
 PENDING_USERS = []
 EMAIL_CODES_PER_DAY = {}
+
+
+def get_public_site_url():
+    configured_url = (current_app.config.get("SITE_URL") or "").strip().rstrip("/")
+    return configured_url or request.url_root.rstrip("/")
 
 
 def normalize_email(email):
@@ -209,6 +215,9 @@ def require_login():
         "static"
     }
     public_paths = {
+        "/",
+        "/robots.txt",
+        "/sitemap.xml",
         "/login",
         "/cadastro",
         "/verificar-email",
@@ -367,8 +376,50 @@ def selecionar_viagem(id_viagem):
         session["viagem"] = id_viagem
     return redirect(url_for("routes.index"))
 
-# Mostra a página inicial
+# Apresentação pública do PlannerTrip
 @routes.route("/")
+def landing():
+    return render_template(
+        "landing.html",
+        site_url=get_public_site_url(),
+        site_name=current_app.config["SITE_NAME"],
+        site_description=current_app.config["SITE_DESCRIPTION"],
+    )
+
+
+@routes.route("/robots.txt")
+def robots_txt():
+    site_url = get_public_site_url()
+    content = "\n".join([
+        "User-agent: *",
+        "Allow: /",
+        "Disallow: /inicio",
+        "Disallow: /selecionar-viagem/",
+        "Disallow: /api/",
+        "Disallow: /logout",
+        f"Sitemap: {site_url}/sitemap.xml",
+        "",
+    ])
+    return Response(content, mimetype="text/plain")
+
+
+@routes.route("/sitemap.xml")
+def sitemap_xml():
+    site_url = get_public_site_url()
+    sitemap = Element(
+        "urlset",
+        {"xmlns": "http://www.sitemaps.org/schemas/sitemap/0.9"},
+    )
+    for path in ("/", "/politica-de-privacidade"):
+        url_entry = SubElement(sitemap, "url")
+        SubElement(url_entry, "loc").text = f"{site_url}{path}"
+
+    xml_content = tostring(sitemap, encoding="utf-8", xml_declaration=True)
+    return Response(xml_content, mimetype="application/xml")
+
+
+# Mostra o painel do usuário
+@routes.route("/inicio")
 def index():
     if "usuario_id" not in session:
         return redirect(url_for("routes.login"))

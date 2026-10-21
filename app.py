@@ -12,7 +12,10 @@ app.config["SESSION_PERMANENT"] = True
 app.config["PERMANENT_SESSION_LIFETIME"] = timedelta(days=365)
 app.config["SESSION_REFRESH_EACH_REQUEST"] = False
 app.config["SITE_NAME"] = os.environ.get("SITE_NAME", "PlannerTrip")
-app.config["SITE_URL"] = os.environ.get("SITE_URL", "https://seu-dominio.com")
+app.config["SITE_URL"] = os.environ.get(
+    "SITE_URL",
+    "https://plannertrip.gabrielsantiago.dev.br",
+).strip().rstrip("/")
 app.config["SITE_DESCRIPTION"] = os.environ.get(
     "SITE_DESCRIPTION",
     "Planeje sua viagem com metas financeiras, organização de datas, anotações e controle de orçamento em um só lugar."

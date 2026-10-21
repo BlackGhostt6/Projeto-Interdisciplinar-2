@@ -87,7 +87,7 @@ pip install -r requirements.txt
 
 ## Variáveis de ambiente
 
-O projeto usa um arquivo `.env` para configurar a conexão com o banco de dados e a chave secreta da sessão.
+O projeto usa um arquivo `.env` para configurar a conexão com o banco de dados, a chave secreta da sessão e, opcionalmente, a URL pública do site.
 
 Crie um arquivo `.env` na raiz do projeto com o seguinte conteúdo:
 
@@ -98,6 +98,7 @@ DB_USER=seu_usuario
 DB_PASSWORD=sua_senha
 DB_PORT=3306
 SECRET_KEY=sua_chave_secreta
+SITE_URL=https://plannertrip.gabrielsantiago.dev.br
 ```
 
 Exemplo de configuração:
@@ -109,9 +110,12 @@ DB_USER=root
 DB_PASSWORD=123456
 DB_PORT=3306
 SECRET_KEY=tripplan-secret-key
+SITE_URL=https://plannertrip.gabrielsantiago.dev.br
 ```
 
 > Importante: ajuste os valores conforme o seu banco MySQL local.
+
+O sitemap público fica em `https://plannertrip.gabrielsantiago.dev.br/sitemap.xml`. Envie esse endereço no Google Search Console para solicitar a descoberta das páginas públicas.
 
 ## Como rodar o projeto
 

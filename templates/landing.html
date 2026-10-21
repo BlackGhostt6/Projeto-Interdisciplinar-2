@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="robots" content="index, follow">
+    <meta name="description" content="{{ site_description }}">
+    <meta name="theme-color" content="#e8f1f5">
+    <meta property="og:site_name" content="{{ site_name }}">
+    <meta property="og:title" content="{{ site_name }} | Planeje sua próxima viagem">
+    <meta property="og:description" content="{{ site_description }}">
+    <meta property="og:type" content="website">
+    <meta property="og:locale" content="pt_BR">
+    <meta property="og:url" content="{{ site_url }}/">
+    <meta property="og:image" content="{{ site_url }}{{ url_for('static', filename='img/preview.png') }}">
+    <meta property="og:image:width" content="1734">
+    <meta property="og:image:height" content="907">
+    <meta property="og:image:alt" content="PlannerTrip: planeje sua próxima viagem">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="{{ site_name }} | Planeje sua próxima viagem">
+    <meta name="twitter:description" content="{{ site_description }}">
+    <meta name="twitter:image" content="{{ site_url }}{{ url_for('static', filename='img/preview.png') }}">
+    <link rel="canonical" href="{{ site_url }}/">
+    <script type="application/ld+json">
+        {
+            "@context": "https://schema.org",
+            "@type": "WebSite",
+            "name": {{ site_name|tojson }},
+            "url": {{ (site_url ~ '/')|tojson }},
+            "description": {{ site_description|tojson }},
+            "inLanguage": "pt-BR"
+        }
+    </script>
+    <link rel="shortcut icon" href="{{ url_for('static', filename='img/fav.png') }}" type="image/png">
+    <link rel="stylesheet" href="{{ url_for('static', filename='landing.css') }}">
+    <title>PlannerTrip | Planeje sua próxima viagem</title>
+</head>
+<body class="landing-page">
+    <header class="landing-header">
+        <a class="landing-brand" href="{{ url_for('routes.landing') }}" aria-label="PlannerTrip, página inicial">
+            <img src="{{ url_for('static', filename='img/favicon.png') }}" alt="">
+            <span>PlannerTrip</span>
+        </a>
+        <nav aria-label="Navegação principal">
+            <a class="nav-feature" href="#recursos">Recursos</a>
+            <a class="nav-login" href="{{ url_for('routes.login') }}">Entrar</a>
+            <a class="nav-cta cta-create" href="{{ url_for('routes.cadastro') }}">Criar minha conta <span aria-hidden="true">↗</span></a>
+        </nav>
+    </header>
+
+    <main class="landing-main">
+        <section class="landing-hero" aria-labelledby="hero-title">
+            <img class="hero-image" src="https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=2200&q=88" alt="Paisagem de montanhas e lago ao entardecer">
+            <div class="hero-shade"></div>
+            <div class="hero-copy">
+                <p class="eyebrow"><span></span> O mundo fica mais perto quando você se planeja</p>
+                <h1 id="hero-title">PlannerTrip</h1>
+                <h2>Sua próxima viagem começa com um plano.</h2>
+                <p class="hero-description">Escolha o destino, acompanhe sua meta e organize cada detalhe. A viagem dos seus planos pode sair do papel.</p>
+                <a class="hero-cta" href="{{ url_for('routes.cadastro') }}">Começar a planejar <span aria-hidden="true">↗</span></a>
+                <p class="hero-note">Gratuito para começar <span aria-hidden="true">·</span> Seu roteiro, no seu ritmo</p>
+            </div>
+            <aside class="trip-preview" aria-label="Exemplo de planejamento de viagem">
+                <div class="preview-destination">
+                    <img src="https://images.unsplash.com/photo-1555881400-74d7acaacd8b?auto=format&fit=crop&w=700&q=85" alt="Rua histórica em Lisboa">
+                    <div class="preview-destination-shade"></div>
+                    <div class="preview-destination-copy">
+                        <span class="preview-country">PORTUGAL</span>
+                        <strong>Lisboa</strong>
+                        <span class="preview-route">⌖ Brasil <span aria-hidden="true">→</span> Portugal</span>
+                    </div>
+                </div>
+                <div class="preview-content">
+                    <div class="preview-title"><span>Meta da viagem</span><span class="preview-estimate">Estimativa</span></div>
+                    <strong class="preview-total">R$ 5.000</strong>
+                    <div class="preview-progress-label"><span>Progresso</span><strong>68%</strong></div>
+                    <div class="preview-progress"><span></span></div>
+                    <div class="preview-saved"><strong>R$ 3.400</strong> guardados</div>
+                    <div class="preview-target"><span aria-hidden="true">◎</span><div><strong>Faltam R$ 1.600</strong><small>Você está no caminho certo.</small></div></div>
+                </div>
+            </aside>
+            <a class="scroll-cue" href="#recursos"><span aria-hidden="true">↓</span> Descubra o seu próximo passo</a>
+        </section>
+
+        <section class="intro-strip" id="recursos">
+            <p class="eyebrow dark-eyebrow">MENOS ABAS. MAIS EXPECTATIVA.</p>
+            <h2>Do primeiro desejo ao embarque.</h2>
+            <p>Um lugar só para transformar vontade de viajar em um plano que cabe na sua vida.</p>
+        </section>
+
+        <section class="feature-list" aria-label="Recursos do PlannerTrip">
+            <article class="feature-item">
+                <span class="feature-number">01</span>
+                <div class="feature-symbol savings-symbol" aria-hidden="true">↗</div>
+                <div><h3>Uma meta que faz sentido</h3><p>Estime os custos do destino e acompanhe quanto falta para chegar lá.</p></div>
+                <span class="feature-arrow" aria-hidden="true">↗</span>
+            </article>
+            <article class="feature-item">
+                <span class="feature-number">02</span>
+                <div class="feature-symbol calendar-symbol" aria-hidden="true">▦</div>
+                <div><h3>Datas para contar os dias</h3><p>Organize ida e volta e veja sua viagem ganhar forma no calendário.</p></div>
+                <span class="feature-arrow" aria-hidden="true">↗</span>
+            </article>
+            <article class="feature-item">
+                <span class="feature-number">03</span>
+                <div class="feature-symbol notes-symbol" aria-hidden="true">✎</div>
+                <div><h3>Ideias sempre à mão</h3><p>Guarde anotações, referências e os detalhes que não quer esquecer.</p></div>
+                <span class="feature-arrow" aria-hidden="true">↗</span>
+            </article>
+        </section>
+
+        <section class="landing-end">
+            <p class="eyebrow dark-eyebrow">O PRÓXIMO DESTINO PODE SER SEU</p>
+            <h2>Comece pelo plano.<br>Continue pela viagem.</h2>
+            <a class="end-cta cta-create" href="{{ url_for('routes.cadastro') }}">Criar minha conta <span aria-hidden="true">↗</span></a>
+        </section>
+    </main>
+
+    <footer class="landing-footer">
+        <a class="landing-brand footer-brand" href="{{ url_for('routes.landing') }}"><img src="{{ url_for('static', filename='img/favicon.png') }}" alt=""><span>PlannerTrip</span></a>
+        <p>Feito para tirar viagens do papel.</p>
+        <a href="{{ url_for('routes.politica_privacidade') }}">Privacidade</a>
+    </footer>
+</body>
+</html>
