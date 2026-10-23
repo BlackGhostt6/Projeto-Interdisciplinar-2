@@ -121,7 +121,7 @@ SITE_URL=https://plannertrip.gabrielsantiago.dev.br
 > `verification_rate_limits`, criadas automaticamente no primeiro fluxo de
 > verificação de e-mail.
 
-O sitemap público fica em `https://plannertrip.gabrielsantiago.dev.br/sitemap.xml`. Envie esse endereço no Google Search Console para solicitar a descoberta das páginas públicas.
+Os arquivos físicos `robots.txt` e `sitemap.xml` ficam na raiz do projeto e são servidos em `https://plannertrip.gabrielsantiago.dev.br/robots.txt` e `https://plannertrip.gabrielsantiago.dev.br/sitemap.xml`. Envie o endereço do sitemap no Google Search Console para solicitar a descoberta das páginas públicas.
 
 ## Como rodar o projeto
 

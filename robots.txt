@@ -1,0 +1,8 @@
+User-agent: *
+Allow: /
+Disallow: /inicio
+Disallow: /selecionar-viagem/
+Disallow: /api/
+Disallow: /logout
+
+Sitemap: https://plannertrip.gabrielsantiago.dev.br/sitemap.xml

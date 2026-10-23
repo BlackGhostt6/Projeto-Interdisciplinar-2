@@ -1,4 +1,4 @@
-from flask import Blueprint, current_app, render_template, request, jsonify, send_file, session, redirect, url_for, Response
+from flask import Blueprint, current_app, render_template, request, jsonify, send_file, session, redirect, url_for
 from database import connection, close, ensure_auth_tables, release_request_connection
 from utils.currency import get_cotacao_info, moeda
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -14,7 +14,6 @@ from pathlib import Path
 from dotenv import load_dotenv
 from datetime import datetime, timedelta, date, timezone
 import requests
-from xml.etree.ElementTree import Element, SubElement, tostring
 
 load_dotenv(Path(__file__).resolve().parents[1] / ".env")
 routes = Blueprint("routes", __name__)
@@ -534,33 +533,12 @@ def landing():
 
 @routes.route("/robots.txt")
 def robots_txt():
-    site_url = get_public_site_url()
-    content = "\n".join([
-        "User-agent: *",
-        "Allow: /",
-        "Disallow: /inicio",
-        "Disallow: /selecionar-viagem/",
-        "Disallow: /api/",
-        "Disallow: /logout",
-        f"Sitemap: {site_url}/sitemap.xml",
-        "",
-    ])
-    return Response(content, mimetype="text/plain")
+    return send_file(Path(current_app.root_path) / "robots.txt", mimetype="text/plain")
 
 
 @routes.route("/sitemap.xml")
 def sitemap_xml():
-    site_url = get_public_site_url()
-    sitemap = Element(
-        "urlset",
-        {"xmlns": "http://www.sitemaps.org/schemas/sitemap/0.9"},
-    )
-    for path in ("/", "/politica-de-privacidade"):
-        url_entry = SubElement(sitemap, "url")
-        SubElement(url_entry, "loc").text = f"{site_url}{path}"
-
-    xml_content = tostring(sitemap, encoding="utf-8", xml_declaration=True)
-    return Response(xml_content, mimetype="application/xml")
+    return send_file(Path(current_app.root_path) / "sitemap.xml", mimetype="application/xml")
 
 
 # Mostra o painel do usuário
