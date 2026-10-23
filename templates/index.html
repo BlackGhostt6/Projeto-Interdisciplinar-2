@@ -91,18 +91,23 @@
                         <p id="obs">Passagens aéreas não inclusas</p>
                     </div>
                     <div id="meta">
+                        {% if meta is not none %}
                         <h3>R$ {{meta|moeda}}</h3>
                         <div id="progress-meta">
+                            <p id="progress-title">Progresso</p>
                             <progress value="{{dash.guardado}}" max="{{meta}}"></progress>
                             <p id="guardado"><span class="valor">R$ {{dash.guardado|moeda}}</span> guardados</p>
                             <p id="percent">{{"%.1f"|format(percent)|replace('.', ',')}}%</p>
-
                         </div>
+                        {% else %}
+                        <h3>Indisponível</h3>
+                        <p id="guardado"><span class="valor">R$ {{dash.guardado|moeda}}</span> guardados</p>
+                        {% endif %}
                         <div class="target">
                             <i class="ph ph-target"></i>
                             <article id=target-desc>
                                 <h4>{{target}}</h4>
-                                <p>Continue assim! Você está no caminho certo.</p>
+                                <p>{% if meta is not none %}Continue assim! Você está no caminho certo.{% else %}Tente novamente quando a cotação estiver disponível.{% endif %}</p>
                             </article>
                         </div>
                     </div>
@@ -129,7 +134,7 @@
                     <i class="ph ph-currency-dollar"></i>
                 </div>
                 <span>{{dash.simbolo}} 1 = R$ {{cotacao|moeda_cotacao}}</span>
-                <p> {{variacao}} {{'%' if variacao not in (None, '0') else '' }}</p>
+                <p>{{'Cotação desatualizada · ' if cotacao_desatualizada else ''}}{{variacao or '--'}} {{'%' if variacao not in (None, '0') else '' }}</p>
             </div>
             <div class="cards viagem">
                 <h4 class="card-title">Sua viagem</h4>

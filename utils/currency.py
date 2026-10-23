@@ -1,95 +1,93 @@
-import requests
-import json
-import os
-from datetime import datetime, timedelta, date
+import math
+import threading
+from datetime import datetime, timedelta
 
-CACHE = "utils/currency_cache.json"
+import requests
+
+
 API_URL = "https://economia.awesomeapi.com.br/json/last"
+CACHE_TTL = timedelta(minutes=5)
+MAX_STALE_AGE = timedelta(hours=1)
+_quote_cache = {}
+_quote_cache_lock = threading.Lock()
 
 
 def _buscar_cotacao(origem, destino):
     par = f"{origem.upper()}-{destino.upper()}"
-    resposta = requests.get(f"{API_URL}/{par}", timeout=5)
+    resposta = requests.get(f"{API_URL}/{par}", timeout=3)
     resposta.raise_for_status()
 
     dados = resposta.json().get(par.replace("-", ""))
     if not dados or "bid" not in dados:
         raise ValueError("Resposta inválida da AwesomeAPI")
 
-    variacao = dados.get("pctChange") or 0
-    return float(dados["bid"]), float(variacao)
+    valor = float(dados["bid"])
+    variacao = float(dados.get("pctChange") or 0)
+    if not math.isfinite(valor) or valor <= 0 or not math.isfinite(variacao):
+        raise ValueError("Cotação inválida da AwesomeAPI")
+    return valor, variacao
+
+
+def get_cotacao_info(origem, destino):
+    chave = f"{origem.upper()}_{destino.upper()}"
+    if origem.upper() == destino.upper():
+        return {"valor": 1.0, "variacao": 0.0, "desatualizada": False}
+
+    agora = datetime.now()
+
+    with _quote_cache_lock:
+        cacheada = _quote_cache.get(chave)
+        if cacheada and agora - cacheada["atualizado"] < CACHE_TTL:
+            return {
+                "valor": cacheada["valor"],
+                "variacao": cacheada["variacao"],
+                "desatualizada": False,
+            }
+
+        try:
+            valor, variacao = _buscar_cotacao(origem, destino)
+        except (requests.RequestException, ValueError, TypeError, KeyError):
+            if cacheada and agora - cacheada["atualizado"] <= MAX_STALE_AGE:
+                return {
+                    "valor": cacheada["valor"],
+                    "variacao": cacheada["variacao"],
+                    "desatualizada": True,
+                }
+            return {"valor": None, "variacao": None, "desatualizada": False}
+
+        _quote_cache[chave] = {
+            "valor": valor,
+            "variacao": variacao,
+            "atualizado": agora,
+        }
+        return {"valor": valor, "variacao": variacao, "desatualizada": False}
+
 
 def get_cotacao(origem, destino):
-    chave = f"{origem}_{destino}"
+    return get_cotacao_info(origem, destino)["valor"]
 
-    # Tenta carregar o cache
-    cache = {}
-
-    try:
-        if os.path.exists(CACHE):
-            with open(CACHE, "r") as arquivo:
-                cache = json.load(arquivo)
-    except (json.JSONDecodeError, OSError):
-        cache = {}
-
-    # Usa o cache se ainda estiver válido
-    if chave in cache:
-        try:
-            data = datetime.fromisoformat(cache[chave]["atualizado"])
-
-            if datetime.now() - data < timedelta(minutes=5):
-                return cache[chave]["valor"]
-        except (KeyError, ValueError):
-            pass
-
-    # Tenta buscar uma cotação nova
-    try:
-        valor, _ = _buscar_cotacao(origem, destino)
-
-        # Atualiza o cache
-        cache[chave] = {
-            "valor": valor,
-            "atualizado": datetime.now().isoformat()
-        }
-
-        try:
-            with open(CACHE, "w") as arquivo:
-                json.dump(cache, arquivo)
-        except OSError:
-            pass
-
-        return valor
-
-    # Se der timeout ou qualquer erro de conexão,
-    # usa o cache antigo
-    except (requests.RequestException, ValueError, TypeError, KeyError):
-        if chave in cache:
-            return cache[chave]["valor"]
-
-        return None
 
 def get_variacao_cotacao(origem, destino):
-    try:
-        _, variacao = _buscar_cotacao(origem, destino)
-        variacao = round(variacao, 4)
-
-        if variacao > 0:
-            return f"+{variacao:.4f}"
-        if variacao < 0:
-            return f"{variacao:.4f}"
-        return "0"
-
-    except (requests.RequestException, ValueError, TypeError, KeyError):
+    variacao = get_cotacao_info(origem, destino)["variacao"]
+    if variacao is None:
         return None
-    
+
+    variacao = round(variacao, 4)
+    if variacao > 0:
+        return f"+{variacao:.4f}"
+    if variacao < 0:
+        return f"{variacao:.4f}"
+    return "0"
+
+
 def moeda(valor):
     return f"{valor:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
 
+
 def moeda_cotacao(valor):
-    if valor is None:   
+    if valor is None:
         return "--"
 
-    if valor <1:
+    if valor < 1:
         return f"{valor:,.4f}".replace(",", "X").replace(".", ",").replace("X", ".")
-    else:
-        return f"{valor:,.3f}".replace(",", "X").replace(".", ",").replace("X", ".")
+    return f"{valor:,.3f}".replace(",", "X").replace(".", ",").replace("X", ".")

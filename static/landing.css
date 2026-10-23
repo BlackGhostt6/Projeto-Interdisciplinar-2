@@ -54,6 +54,7 @@ body.landing-page {
     align-items: center;
     gap: 10px;
     color: var(--landing-ink);
+    font-family: "boldonse", sans-serif;
     font-size: 18px;
     font-weight: 700;
 }
@@ -75,6 +76,11 @@ body.landing-page {
 .nav-feature,
 .nav-login {
     transition: color .2s ease;
+}
+
+a{
+    color: var(--landing-ink);
+    font-family: 'Martel Sans', sans-serif;
 }
 
 .nav-feature:hover,
@@ -293,6 +299,12 @@ body.landing-page {
     gap: 5px;
     color: rgba(255, 255, 255, .9);
     font-size: 9px;
+}
+
+#footer-links {
+    display: flex;
+    gap: 20px;
+    align-items: center;
 }
 
 .preview-content {
@@ -524,6 +536,52 @@ body.landing-page {
     font-size: 18px;
 }
 
+.about-section {
+    padding: 0 24px 88px;
+}
+
+.about-card {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr);
+    gap: 48px;
+    width: min(920px, 100%);
+    margin: 0 auto;
+    padding: 42px clamp(28px, 6vw, 64px);
+    background: var(--planner-primary);
+    color: white;
+}
+
+.about-heading .eyebrow {
+    margin-bottom: 12px;
+    color: var(--planner-accent);
+}
+
+.about-heading h2 {
+    margin: 0;
+    font-size: clamp(25px, 3.3vw, 36px);
+    line-height: 1.2;
+}
+
+.about-copy p {
+    margin: 0 0 18px;
+    color: rgba(255, 255, 255, .82);
+    font-size: 13px;
+    line-height: 1.8;
+}
+
+.about-portfolio {
+    display: inline-flex;
+    align-items: center;
+    gap: 9px;
+    color: var(--planner-accent);
+    font-size: 13px;
+    font-weight: 700;
+}
+
+.about-portfolio:hover {
+    color: white;
+}
+
 .landing-end {
     padding: 77px 24px 86px;
     background: #dceaf0;
@@ -541,13 +599,21 @@ body.landing-page {
 }
 
 .landing-footer {
-    display: flex;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
     align-items: center;
-    justify-content: space-between;
     gap: 20px;
     min-height: 82px;
     padding: 16px clamp(22px, 6vw, 92px);
     background: var(--landing-paper);
+}
+
+#footer-links {
+    justify-self: center;
+}
+
+.landing-footer > a:last-child {
+    justify-self: end;
 }
 
 .footer-brand {
@@ -626,7 +692,7 @@ body.landing-page {
     }
 
     .hero-copy h1 {
-        font-size: clamp(61px, 15vw, 88px);
+        font-size: clamp(48px, 12.7vw, 72px);
     }
 
     .hero-copy h2 {
@@ -677,6 +743,16 @@ body.landing-page {
         margin-bottom: 72px;
     }
 
+    .about-section {
+        padding: 0 22px 72px;
+    }
+
+    .about-card {
+        grid-template-columns: 1fr;
+        gap: 18px;
+        padding: 32px 26px;
+    }
+
     .feature-item {
         grid-template-columns: 26px 44px 1fr 14px;
         gap: 12px;
@@ -697,13 +773,23 @@ body.landing-page {
     }
 
     .landing-footer {
-        flex-wrap: wrap;
-        justify-content: space-between;
+        grid-template-columns: 1fr 1fr;
         padding: 18px 22px;
     }
 
+    .landing-footer > a:last-child {
+        grid-column: 2;
+        grid-row: 1;
+    }
+
+    #footer-links {
+        grid-column: 1 / -1;
+        grid-row: 2;
+    }
+
     .landing-footer p {
-        order: 1;
+        grid-column: 1 / -1;
+        grid-row: 3;
         width: 100%;
         margin: 0;
     }
@@ -731,10 +817,6 @@ body.landing-page {
     .feature-symbol {
         width: 36px;
         height: 36px;
-    }
-    
-    .landing-brand span{
-        font-size: 9px
     }
 }
 

@@ -219,8 +219,8 @@ p{
 }
 
 #obs{
-    margin-left: 22%;
     flex-wrap: wrap;
+    margin-right: 1rem;
     font-size: small;
     color: var(--accent-text);
     font-weight: 600;
@@ -228,6 +228,7 @@ p{
 
 #content-title{
     display: flex;
+    justify-content: space-between;
     margin: 0;
     padding: 0;
     align-items: center;
@@ -806,12 +807,20 @@ textarea:focus {
 #percent{
     position: absolute;
     right: 0;
-    top:1.5rem;
+    top:0;
     color: var(--accent-text);
 }
 
 #progress-meta{
+    display: flex;
+    margin: .5rem 0;
+    flex-direction: column;
+    gap: 10px;
     position: relative;
+}
+
+#progress-title{
+    color: var(--text-secondary)
 }
 
 select{

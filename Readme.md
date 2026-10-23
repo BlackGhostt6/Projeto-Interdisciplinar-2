@@ -97,7 +97,7 @@ DB_NAME=seu_banco
 DB_USER=seu_usuario
 DB_PASSWORD=sua_senha
 DB_PORT=3306
-SECRET_KEY=sua_chave_secreta
+SECRET_KEY=gere_uma_chave_aleatoria_longa
 SITE_URL=https://plannertrip.gabrielsantiago.dev.br
 ```
 
@@ -107,13 +107,19 @@ Exemplo de configuração:
 DB_HOST=localhost
 DB_NAME=plannertrip
 DB_USER=root
-DB_PASSWORD=123456
+DB_PASSWORD=sua_senha
 DB_PORT=3306
-SECRET_KEY=tripplan-secret-key
+SECRET_KEY=gere_uma_chave_aleatoria_longa
 SITE_URL=https://plannertrip.gabrielsantiago.dev.br
 ```
 
 > Importante: ajuste os valores conforme o seu banco MySQL local.
+> Gere uma chave exclusiva e aleatória para `SECRET_KEY` e configure a mesma
+> chave em todos os workers. No Railway, cadastre-a como variável de ambiente;
+> a aplicação não inicia no Railway sem ela. O usuário MySQL também precisa
+> poder criar as tabelas `verification_challenges` e
+> `verification_rate_limits`, criadas automaticamente no primeiro fluxo de
+> verificação de e-mail.
 
 O sitemap público fica em `https://plannertrip.gabrielsantiago.dev.br/sitemap.xml`. Envie esse endereço no Google Search Console para solicitar a descoberta das páginas públicas.
 

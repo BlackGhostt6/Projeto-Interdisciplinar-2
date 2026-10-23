@@ -1,6 +1,9 @@
 *.env
 DB.sql
 
+tests/
+RELATORIO_AUDITORIA_PYTHON.txt
+
 __pycache__/*
 *.pyc
 *.pyo

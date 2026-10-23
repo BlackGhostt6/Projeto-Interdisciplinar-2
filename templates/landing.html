@@ -21,6 +21,7 @@
     <meta name="twitter:description" content="{{ site_description }}">
     <meta name="twitter:image" content="{{ site_url }}{{ url_for('static', filename='img/preview.png') }}">
     <link rel="canonical" href="{{ site_url }}/">
+    <script src="https://kit.fontawesome.com/a3a9f84800.js" crossorigin="anonymous"></script>
     <script type="application/ld+json">
         {
             "@context": "https://schema.org",
@@ -109,6 +110,21 @@
             </article>
         </section>
 
+        <section class="about-section" aria-labelledby="about-title">
+            <div class="about-card">
+                <div class="about-heading">
+                    <p class="eyebrow">QUEM CRIOU ESTE PROJETO</p>
+                    <h2 id="about-title">Gabriel Santiago</h2>
+                </div>
+                <div class="about-copy">
+                    <p>O PlannerTrip é um aplicativo desenvolvido como parte de um curso de Tecnologia da Informação. Foi uma oportunidade de transformar o aprendizado em um projeto prático e criar uma ferramenta para ajudar pessoas a organizar suas próximas viagens.</p>
+                    <a class="about-portfolio" href="https://gabrielsantiago.dev.br" target="_blank" rel="noopener noreferrer">
+                        Conheça meu portfólio <span aria-hidden="true">↗</span>
+                    </a>
+                </div>
+            </div>
+        </section>
+
         <section class="landing-end">
             <p class="eyebrow dark-eyebrow">O PRÓXIMO DESTINO PODE SER SEU</p>
             <h2>Comece pelo plano.<br>Continue pela viagem.</h2>
@@ -118,7 +134,10 @@
 
     <footer class="landing-footer">
         <a class="landing-brand footer-brand" href="{{ url_for('routes.landing') }}"><img src="{{ url_for('static', filename='img/favicon.png') }}" alt=""><span>PlannerTrip</span></a>
-        <p>Feito para tirar suas viagens do papel.</p>
+        <div id="footer-links">
+            <a href="https://github.com/BlackGhostt6"  target="_blank" aria-label="GitHub"><i class="fa fa-github" style="font-size: 24px; color: #17202a;"></i></a>
+            <a href="https://www.linkedin.com/in/gabriel-santiago-2558301a6/" target="_blank" aria-label="LinkedIn"><i class="fa fa-linkedin" style="font-size: 24px; color: #17202a;"></i></a>
+        </div>
         <a href="{{ url_for('routes.politica_privacidade') }}">Privacidade</a>
     </footer>
 </body>
