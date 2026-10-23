@@ -733,8 +733,8 @@ body.landing-page {
         height: 36px;
     }
     
-    .landing-brand {
-        font-size: 14px
+    .landing-brand span{
+        font-size: 12px
     }
 }
 
