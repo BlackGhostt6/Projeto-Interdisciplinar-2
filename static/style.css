@@ -1253,6 +1253,69 @@ dialog input:valid:not(:placeholder-shown) {
     overflow-y: auto;
 }
 
+#login-loading h1 {
+    margin: 0 0 1.25rem;
+    font-size: clamp(1.8rem, 2vw, 2.4rem);
+    font-weight: 600;
+}
+
+.login-skeleton {
+    display: grid;
+    gap: .65rem;
+}
+
+.skeleton-line {
+    display: block;
+    border-radius: 8px;
+    background: linear-gradient(90deg, var(--border) 25%, var(--card-btn) 50%, var(--border) 75%);
+    background-size: 200% 100%;
+    animation: login-skeleton-pulse 1.4s ease-in-out infinite;
+}
+
+.skeleton-label {
+    width: 38%;
+    height: .85rem;
+}
+
+.skeleton-input {
+    width: 100%;
+    height: 2.9rem;
+    margin-bottom: .45rem;
+}
+
+.skeleton-button {
+    width: 100%;
+    height: 2.8rem;
+    margin-top: .4rem;
+}
+
+#login-loading-status {
+    color: var(--text-secondary);
+    line-height: 1.5;
+}
+
+.login-loading-cancel {
+    width: 100%;
+    padding: .7rem 1rem;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    background: var(--background);
+    color: var(--text);
+    cursor: pointer;
+}
+
+@keyframes login-skeleton-pulse {
+    to {
+        background-position: -200% 0;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .skeleton-line {
+        animation: none;
+    }
+}
+
 #login a, #cadastro a{
     color: #20639B;
 }

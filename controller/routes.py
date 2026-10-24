@@ -614,7 +614,11 @@ def index():
 
 @routes.route("/login", methods=['GET', 'POST'])
 def login():
+    wants_json = request.accept_mimetypes.best == "application/json"
+
     if "usuario_id" in session:
+        if wants_json:
+            return jsonify({"sucesso": True, "redirect": url_for("routes.index")})
         return redirect(url_for("routes.index"))
 
     erro = None
@@ -625,6 +629,8 @@ def login():
 
         if not usuario or not senha:
             erro = 'Preencha usuário e senha.'
+            if wants_json:
+                return jsonify({"erro": erro}), 400
         else:
             try:
                 conn, cursor = connection()
@@ -660,17 +666,26 @@ def login():
                         session.permanent = True
                         session['usuario_id'] = usuario_db[0]
                         session['usuario_nome'] = usuario_db[1]
+                        if wants_json:
+                            return jsonify({
+                                "sucesso": True,
+                                "redirect": url_for('routes.index'),
+                            })
                         return redirect(url_for('routes.index'))
 
                 erro = 'Usuário ou senha inválidos.'
+                if wants_json:
+                    return jsonify({"erro": erro}), 401
             except MySQLDatabaseError as exc:
                 if not is_transient_connection_error(exc):
                     raise
                 current_app.logger.exception("Banco indisponível durante tentativa de login.")
+                if wants_json:
+                    return jsonify({"aguardando_servidor": True}), 503
                 return (
                     render_template(
                         'login.html',
-                        erro='O servidor ainda está iniciando. Aguarde alguns segundos e tente entrar novamente.',
+                        erro='Não foi possível acessar o servidor agora. Tente novamente em alguns segundos.',
                         usuario=usuario,
                     ),
                     503,

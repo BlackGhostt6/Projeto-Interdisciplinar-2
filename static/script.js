@@ -127,6 +127,79 @@ themeButtons.forEach((button) => {
     });
 });
 
+const loginForm = document.getElementById("login-form");
+if (loginForm) {
+    const loginContent = document.getElementById("login-content");
+    const loginLoading = document.getElementById("login-loading");
+    const loginLoadingStatus = document.getElementById("login-loading-status");
+    const loginError = document.getElementById("login-error");
+    const cancelLoginLoading = document.getElementById("cancel-login-loading");
+    let loginRequest;
+    let loginCancelled = false;
+
+    const returnToLogin = (message) => {
+        loginLoading.hidden = true;
+        loginContent.hidden = false;
+        loginForm.querySelector('button[type="submit"]').disabled = false;
+        if (message) {
+            loginError.textContent = message;
+            loginError.hidden = false;
+        }
+    };
+
+    cancelLoginLoading.addEventListener("click", () => {
+        loginCancelled = true;
+        loginRequest?.abort();
+        returnToLogin("");
+    });
+
+    loginForm.addEventListener("submit", async (event) => {
+        event.preventDefault();
+        loginCancelled = false;
+        loginError.hidden = true;
+        loginContent.hidden = true;
+        loginLoading.hidden = false;
+        loginLoadingStatus.textContent = "Aguardando resposta do servidor...";
+        loginForm.querySelector('button[type="submit"]').disabled = true;
+
+        const formData = new FormData(loginForm);
+        let retryDelay = 1000;
+
+        while (!loginCancelled) {
+            loginRequest = new AbortController();
+            try {
+                const response = await fetch(loginForm.action, {
+                    method: "POST",
+                    headers: { Accept: "application/json" },
+                    body: formData,
+                    signal: loginRequest.signal
+                });
+                const data = await response.json();
+
+                if (response.status === 503 && data.aguardando_servidor) {
+                    loginLoadingStatus.textContent = "A conexão está demorando um pouco. Tentando novamente...";
+                    await new Promise((resolve) => setTimeout(resolve, retryDelay));
+                    retryDelay = Math.min(retryDelay * 2, 5000);
+                    continue;
+                }
+
+                if (response.ok && data.sucesso) {
+                    window.location.assign(data.redirect);
+                    return;
+                }
+
+                returnToLogin(data.erro || "Não foi possível entrar. Tente novamente.");
+                return;
+            } catch (error) {
+                if (!loginCancelled) {
+                    returnToLogin("Não foi possível conectar ao servidor. Verifique sua conexão e tente novamente.");
+                }
+                return;
+            }
+        }
+    });
+}
+
 function clearModalError(modalId) {
     const errorBox = document.getElementById(`${modalId}-error`);
     if (errorBox) {

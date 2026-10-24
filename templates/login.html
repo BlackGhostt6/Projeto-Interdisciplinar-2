@@ -26,14 +26,13 @@
 </head>
 <body style="display: flex; justify-content: center; align-items: center; height: 100vh;">
     <section id="login">
-        <h1>Login</h1>
-        {% if erro %}
-            <p role="alert" aria-live="polite" style="color: var(--danger); margin: 0 0 1rem; font-size: 0.85rem;">{{ erro }}</p>
-        {% endif %}
-        <form method="POST" action="{{ url_for('routes.login') }}">
-            <label for="usuario">Usuário / e-mail:</label>
-            <input type="text" id="usuario" name="usuario" value="{{ usuario or '' }}" placeholder="Digite seu usuário ou e-mail" required>
-            <label for="senha">Senha:</label>
+        <div id="login-content">
+            <h1>Login</h1>
+            <p id="login-error" role="alert" aria-live="polite" style="color: var(--danger); margin: 0 0 1rem; font-size: 0.85rem;" {% if not erro %}hidden{% endif %}>{{ erro or '' }}</p>
+            <form id="login-form" method="POST" action="{{ url_for('routes.login') }}">
+                <label for="usuario">Usuário / e-mail:</label>
+                <input type="text" id="usuario" name="usuario" value="{{ usuario or '' }}" placeholder="Digite seu usuário ou e-mail" required>
+                <label for="senha">Senha:</label>
                 <div class="senha-container">
                     <input type="password" id="senha" name="senha" placeholder="Digite sua senha" required>
 
@@ -45,12 +44,25 @@
                     <a href="{{ url_for('routes.esqueci_senha') }}">Esqueci minha senha</a>
                 </p>
                 <p>Não possui uma conta? <a href="{{ url_for('routes.cadastro') }}">Clique aqui.</a></p>
-                
-            <div id="botoes">
-                <button class="btn" id="login-btn" type="submit">Login</button>
-                <button class="btn" id="login-theme-btn" type="button"><i id="theme-icon" class="fas fa-moon"></i></button>
+
+                <div id="botoes">
+                    <button class="btn" id="login-btn" type="submit">Login</button>
+                    <button class="btn" id="login-theme-btn" type="button"><i id="theme-icon" class="fas fa-moon"></i></button>
+                </div>
+            </form>
+        </div>
+        <div id="login-loading" class="login-loading" hidden aria-live="polite">
+            <h1>Conectando...</h1>
+            <div class="login-skeleton" aria-hidden="true">
+                <span class="skeleton-line skeleton-label"></span>
+                <span class="skeleton-line skeleton-input"></span>
+                <span class="skeleton-line skeleton-label"></span>
+                <span class="skeleton-line skeleton-input"></span>
+                <span class="skeleton-line skeleton-button"></span>
             </div>
-        </form>
+            <p id="login-loading-status">Aguardando resposta do servidor...</p>
+            <button type="button" id="cancel-login-loading" class="login-loading-cancel">Voltar ao login</button>
+        </div>
     </section>
 <script src="{{ url_for('static', filename='script.js') }}"></script>
 </body>
