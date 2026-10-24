@@ -1,6 +1,6 @@
 *.env
 DB.sql
-
+currency_cache.json
 tests/
 RELATORIO_AUDITORIA_PYTHON.txt
 
