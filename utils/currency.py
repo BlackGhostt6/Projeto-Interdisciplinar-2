@@ -5,6 +5,7 @@ import os
 import tempfile
 import threading
 from datetime import datetime, timedelta
+from email.utils import parsedate_to_datetime
 from pathlib import Path
 
 import requests
@@ -12,9 +13,10 @@ import requests
 
 API_URL = "https://economia.awesomeapi.com.br/json/last"
 CACHE_FILE = Path(__file__).with_name("currency_cache.json")
-CACHE_TTL = timedelta(minutes=5)
+CACHE_TTL = timedelta(minutes=30)
 MAX_STALE_AGE = timedelta(hours=1)
 _quote_cache = {}
+_quote_retry_after = {}
 _quote_cache_lock = threading.Lock()
 logger = logging.getLogger(__name__)
 
@@ -104,6 +106,26 @@ def _buscar_cotacao(origem, destino):
     return valor, variacao
 
 
+def _get_rate_limit_expiry(error, now):
+    resposta = getattr(error, "response", None)
+    if getattr(resposta, "status_code", None) != 429:
+        return None
+
+    retry_after = resposta.headers.get("Retry-After")
+    if retry_after:
+        try:
+            segundos = max(float(retry_after), 0)
+            return now + timedelta(seconds=segundos)
+        except ValueError:
+            try:
+                data_retentativa = parsedate_to_datetime(retry_after)
+                return datetime.fromtimestamp(data_retentativa.timestamp())
+            except (TypeError, ValueError, OverflowError):
+                pass
+
+    return now + timedelta(minutes=5)
+
+
 def get_cotacao_info(origem, destino):
     chave = f"{origem.upper()}_{destino.upper()}"
     if origem.upper() == destino.upper():
@@ -128,6 +150,16 @@ def get_cotacao_info(origem, destino):
                 "desatualizada": False,
             }
 
+        limite_retentativa = _quote_retry_after.get(chave)
+        if limite_retentativa and agora < limite_retentativa:
+            if cacheada and agora - cacheada["atualizado"] <= MAX_STALE_AGE:
+                return {
+                    "valor": cacheada["valor"],
+                    "variacao": cacheada["variacao"],
+                    "desatualizada": True,
+                }
+            return {"valor": None, "variacao": None, "desatualizada": False}
+
         try:
             valor, variacao = _buscar_cotacao(origem, destino)
         except (requests.RequestException, ValueError, TypeError, KeyError) as exc:
@@ -137,6 +169,9 @@ def get_cotacao_info(origem, destino):
                 destino.upper(),
                 exc,
             )
+            retentar_em = _get_rate_limit_expiry(exc, agora)
+            if retentar_em is not None:
+                _quote_retry_after[chave] = retentar_em
             if cacheada and agora - cacheada["atualizado"] <= MAX_STALE_AGE:
                 return {
                     "valor": cacheada["valor"],
@@ -150,6 +185,7 @@ def get_cotacao_info(origem, destino):
             "variacao": variacao,
             "atualizado": agora,
         }
+        _quote_retry_after.pop(chave, None)
         _save_cache()
         return {"valor": valor, "variacao": variacao, "desatualizada": False}
 
