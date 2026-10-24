@@ -222,7 +222,7 @@ Essas dependências estão listadas em `requirements.txt`.
 - O projeto foi pensado para uso em ambiente com banco MySQL configurado;
 - O login repete brevemente a conexão se o MySQL ainda estiver iniciando. Falhas do banco retornam uma tela ou resposta de serviço temporariamente indisponível, sem expor a página técnica de erro;
 - As conversões de moeda dependem da API de economia externa;
-- As cotações usam cache em memória por 30 minutos e `utils/currency_cache.json` como fallback compartilhável entre processos, com validade máxima de 1 hora para valores desatualizados. Em caso de limite de requisições (HTTP 429), a aplicação respeita o cabeçalho `Retry-After` e evita novas chamadas durante esse período. A gravação em disco é opcional; em hosts com filesystem efêmero ou sem permissão de escrita, a aplicação continua consultando a API externa;
+- As cotações usam cache em memória por 30 minutos e `utils/currency_cache.json` como fallback compartilhável entre processos, com validade máxima de 24 horas para valores desatualizados. Em caso de limite de requisições (HTTP 429), a aplicação respeita o cabeçalho `Retry-After` e evita novas chamadas durante esse período. A gravação em disco é opcional; em hosts com filesystem efêmero ou sem permissão de escrita, a aplicação continua consultando a API externa;
 - O deploy em produção pode exigir ajustes de ambiente, domínio e variáveis de servidor.
 
 ## Fluxo de uso básico

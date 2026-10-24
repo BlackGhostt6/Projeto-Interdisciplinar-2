@@ -14,7 +14,7 @@ import requests
 API_URL = "https://economia.awesomeapi.com.br/json/last"
 CACHE_FILE = Path(__file__).with_name("currency_cache.json")
 CACHE_TTL = timedelta(minutes=30)
-MAX_STALE_AGE = timedelta(hours=1)
+MAX_STALE_AGE = timedelta(hours=24)
 _quote_cache = {}
 _quote_retry_after = {}
 _quote_cache_lock = threading.Lock()
