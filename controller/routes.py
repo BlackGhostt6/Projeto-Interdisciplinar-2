@@ -1,5 +1,12 @@
 from flask import Blueprint, current_app, render_template, request, jsonify, send_file, session, redirect, url_for
-from database import connection, close, ensure_auth_tables, release_request_connection
+from database import (
+    close,
+    connection,
+    ensure_auth_tables,
+    is_transient_connection_error,
+    release_request_connection,
+)
+from mysql.connector import Error as MySQLDatabaseError
 from utils.currency import get_cotacao_info, moeda
 from werkzeug.security import generate_password_hash, check_password_hash
 from decimal import Decimal, InvalidOperation
@@ -619,41 +626,57 @@ def login():
         if not usuario or not senha:
             erro = 'Preencha usuário e senha.'
         else:
-            conn, cursor = connection()
-            cursor.execute("""
-                SELECT id_user, nome, username, email, senha
-                FROM usuarios
-                WHERE email = %s OR username = %s
-                LIMIT 1
-            """, (usuario, usuario))
-            usuario_db = cursor.fetchone()
-            close(conn, cursor)
+            try:
+                conn, cursor = connection()
+                cursor.execute("""
+                    SELECT id_user, nome, username, email, senha
+                    FROM usuarios
+                    WHERE email = %s OR username = %s
+                    LIMIT 1
+                """, (usuario, usuario))
+                usuario_db = cursor.fetchone()
+                close(conn, cursor)
 
-            if usuario_db:
-                senha_hash = usuario_db[4]
-                senha_valida = False
+                if usuario_db:
+                    senha_hash = usuario_db[4]
+                    senha_valida = False
 
-                if senha_hash.startswith('pbkdf2:') or senha_hash.startswith('scrypt:') or senha_hash.startswith('argon2:') or senha_hash.startswith('bcrypt:'):
-                    senha_valida = check_password_hash(senha_hash, senha)
-                else:
-                    senha_valida = (senha_hash == senha)
+                    if senha_hash.startswith(('pbkdf2:', 'scrypt:', 'argon2:', 'bcrypt:')):
+                        senha_valida = check_password_hash(senha_hash, senha)
+                    else:
+                        senha_valida = senha_hash == senha
 
-                if senha_valida:
-                    if not (senha_hash.startswith('pbkdf2:') or senha_hash.startswith('scrypt:') or senha_hash.startswith('argon2:') or senha_hash.startswith('bcrypt:')):
-                        conn, cursor = connection()
-                        cursor.execute("UPDATE usuarios SET senha = %s WHERE id_user = %s", (generate_password_hash(senha), usuario_db[0]))
-                        conn.commit()
-                        close(conn, cursor)
+                    if senha_valida:
+                        if not senha_hash.startswith(('pbkdf2:', 'scrypt:', 'argon2:', 'bcrypt:')):
+                            conn, cursor = connection()
+                            cursor.execute(
+                                "UPDATE usuarios SET senha = %s WHERE id_user = %s",
+                                (generate_password_hash(senha), usuario_db[0]),
+                            )
+                            conn.commit()
+                            close(conn, cursor)
 
-                    session.clear()
-                    session.permanent = True
-                    session['usuario_id'] = usuario_db[0]
-                    session['usuario_nome'] = usuario_db[1]
-                    return redirect(url_for('routes.index'))
+                        session.clear()
+                        session.permanent = True
+                        session['usuario_id'] = usuario_db[0]
+                        session['usuario_nome'] = usuario_db[1]
+                        return redirect(url_for('routes.index'))
 
-            erro = 'Usuário ou senha inválidos.'
+                erro = 'Usuário ou senha inválidos.'
+            except MySQLDatabaseError as exc:
+                if not is_transient_connection_error(exc):
+                    raise
+                current_app.logger.exception("Banco indisponível durante tentativa de login.")
+                return (
+                    render_template(
+                        'login.html',
+                        erro='O servidor ainda está iniciando. Aguarde alguns segundos e tente entrar novamente.',
+                        usuario=usuario,
+                    ),
+                    503,
+                )
 
-    return render_template('login.html', erro=erro)
+    return render_template('login.html', erro=erro, usuario=request.form.get('usuario', ''))
 
 @routes.route("/logout")
 def logout():

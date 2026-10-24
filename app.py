@@ -1,6 +1,7 @@
 import os
-from flask import Flask, render_template
+from flask import Flask, jsonify, render_template, request
 from database import close_request_connection
+from mysql.connector import Error as MySQLDatabaseError
 from datetime import timedelta
 from utils.currency import moeda, moeda_cotacao
 
@@ -34,6 +35,29 @@ app.config["SITE_DESCRIPTION"] = os.environ.get(
 from controller.routes import routes
 app.register_blueprint(routes)
 app.teardown_appcontext(close_request_connection)
+
+
+@app.errorhandler(MySQLDatabaseError)
+def handle_database_error(error):
+    app.logger.error(
+        "Erro de banco de dados durante %s %s.",
+        request.method,
+        request.path,
+        exc_info=(type(error), error, error.__traceback__),
+    )
+    message = "Não foi possível acessar os dados agora. Aguarde alguns segundos e tente novamente."
+
+    if request.path.startswith("/api/") or request.accept_mimetypes.best == "application/json":
+        response = jsonify({"sucesso": False, "erro": message})
+    else:
+        response = app.make_response(
+            (render_template("servico_indisponivel.html"), 503)
+        )
+
+    response.status_code = 503
+    response.headers["Retry-After"] = "5"
+    return response
+
 
 app.jinja_env.filters["moeda"] = moeda
 app.jinja_env.filters["moeda_cotacao"] = moeda_cotacao

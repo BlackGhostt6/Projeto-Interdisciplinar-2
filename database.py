@@ -1,5 +1,6 @@
 import mysql.connector
 import os
+import time
 from flask import g, has_app_context
 from dotenv import load_dotenv
 from threading import Lock
@@ -16,8 +17,31 @@ db_config = {
     'port': int(os.getenv('DB_PORT', 3306))
 }
 
+DB_CONNECT_RETRY_DELAYS = (0.5, 1.0)
+TRANSIENT_DB_ERROR_CODES = {
+    mysql.connector.errorcode.CR_CONNECTION_ERROR,
+    mysql.connector.errorcode.CR_CONN_HOST_ERROR,
+    mysql.connector.errorcode.CR_UNKNOWN_HOST,
+    mysql.connector.errorcode.CR_SERVER_GONE_ERROR,
+    mysql.connector.errorcode.CR_SERVER_LOST,
+    mysql.connector.errorcode.CR_SERVER_LOST_EXTENDED,
+}
+
+
+def is_transient_connection_error(error):
+    return getattr(error, "errno", None) in TRANSIENT_DB_ERROR_CODES
+
+
 def get_db_connection():
-    return mysql.connector.connect(**db_config)
+    for tentativa in range(len(DB_CONNECT_RETRY_DELAYS) + 1):
+        try:
+            return mysql.connector.connect(**db_config, connection_timeout=5)
+        except mysql.connector.Error as error:
+            if not is_transient_connection_error(error):
+                raise
+            if tentativa == len(DB_CONNECT_RETRY_DELAYS):
+                raise
+            time.sleep(DB_CONNECT_RETRY_DELAYS[tentativa])
 
 
 def connection():
